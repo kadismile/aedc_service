@@ -1,0 +1,9 @@
+**/node_modules
+**/data/
+# Coverage directory used by tools like istanbul, jest
+coverage
+.env
+.env.development
+.env.production
+.env.tst
+/dist
