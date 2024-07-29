@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import mongoose, { Model, Schema, UpdateQuery } from 'mongoose';
 
-import { STAFF_REGION, STAFF_ROLE, StaffDoc } from '../../types/staff/staff.js';
+import { STAFF_ROLE, StaffDoc } from '../../types/staff/staff.js';
 import {
   BaseModelMethods,
   findActive,
@@ -49,10 +49,6 @@ const staffSchema = new mongoose.Schema<StaffDocumentResult, StaffModel>(
       type: String,
       enum: STAFF_ROLE
     },
-    staffRegion: {
-      type: String,
-      enum: STAFF_REGION
-    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'Staff',
@@ -78,20 +74,30 @@ staffSchema.pre('save', async function (next) {
 });
 
 staffSchema.pre('findOneAndUpdate', async function () {
-  const update: UpdateQuery<StaffDocumentResult> = this.getUpdate();
-  if (update.password && typeof update.password === 'string') {
-    update.password = await bcrypt.hash(update.password, await bcrypt.genSalt(10));
+  const update = this.getUpdate() as UpdateQuery<StaffDocumentResult> | null;
+  if (update) {
+    if (update.password && typeof update.password === 'string') {
+      update.password = await bcrypt.hash(update.password, await bcrypt.genSalt(10));
+    }
+  } else {
+    throw new Error('Update query cannot be null');
   }
 });
 
 staffSchema.methods.matchPassword = async function (this: StaffDoc, enteredPassword: string) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
 staffSchema.methods.getSignedJwtToken = function (this: StaffDoc) {
   const JWT_SECRET = process.env.JWT_SECRET;
-  return jwt.sign({ email: this.email, role: this.role, password: this.password }, JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE
-  });
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is not defined');
+  }
+  return jwt.sign(
+    { email: this.email, role: this.role, password: this.password },
+    JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE }
+  );
 };
 
 staffSchema.static('findOneActive', findOneActive);
