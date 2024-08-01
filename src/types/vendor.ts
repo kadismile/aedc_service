@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 
-import { AdvancedQueryResult } from '../queryresults.js';
+import { AdvancedQueryResult } from './queryresults.js';
 
 export type VendorDoc = {
   _id: Types.ObjectId;

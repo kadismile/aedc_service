@@ -1,6 +1,6 @@
 import mongoose, { Model } from 'mongoose';
 
-import { VendorDoc } from '../../types/vendor/vendor.js';
+import { VendorDoc } from '../../types/vendor.js';
 import {
   BaseModelMethods,
   findActive,
