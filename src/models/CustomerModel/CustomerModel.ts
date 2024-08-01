@@ -24,18 +24,33 @@ const customerSchema = new mongoose.Schema<CustomerDocumentResult, CustomerModel
       required: true,
       unique: true
     },
-    address: {
-      type: String,
-      required: true
-    },
     phoneNumber: {
       type: String,
       required: true,
       unique: true
     },
-    geocode: {
-      latitude: { type: Number, required: true },
-      longitude: { type: Number, required: true }
+    address: {
+      fullAddress: {
+        type: String,
+        required: true
+      },
+      state: {
+        type: String,
+        required: true,
+        enum: ['Abuja', 'Nassarawa', 'Kogi']
+      },
+      longitude: {
+        type: Number,
+        required: true
+      },
+      latitude: {
+        type: Number,
+        required: true
+      },
+      geocode: {
+        type: String,
+        required: true
+      }
     },
     isActive: {
       type: Boolean,

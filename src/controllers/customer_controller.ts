@@ -1,48 +1,26 @@
 import { Request, Response } from 'express';
-import NodeGeocoder from 'node-geocoder';
+import { Document } from 'mongoose';
 
 import { createCustomerApiValidator } from '../api_validators/customer-api-validator.js';
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
 import Customer, { CustomerDocumentResult } from '../models/CustomerModel/CustomerModel.js';
-import { CustomerDoc,RegisterCustomerRequestBody } from '../types/customer.js';
-
-
-const geocoder = NodeGeocoder({
-  provider: 'openstreetmap',
-  httpAdapter: 'https',
-  formatter: null
-});
+import { RegisterCustomerRequestBody, CustomerDoc } from '../types/customer.js';
 
 export const createCustomer = async (req: Request, res: Response) => {
   const body = req.body as RegisterCustomerRequestBody;
-  const { name, address, phoneNumber } = body;
-
+  const { name, phoneNumber, address } = body;
   try {
     const { error } = createCustomerApiValidator.validate(req.body);
     if (error) {
       return res.status(422).json({ error: error.details[0].message });
     }
-
-    // Get geocode information
-    const [geoData] = await geocoder.geocode(address);
-    if (!geoData) {
-      return res.status(404).json({ message: 'Unable to geocode address' });
-    }
-
-    const { latitude, longitude } = geoData;
-
     const newCustomer = new Customer({
       name,
-      address,
       phoneNumber,
-      geocode: {
-        latitude,
-        longitude
-      },
+      address,
       createdBy: req.staff._id
     });
-
     await newCustomer.save();
     return res.status(201).json({
       status: 'success',
@@ -55,6 +33,7 @@ export const createCustomer = async (req: Request, res: Response) => {
   }
 };
 
+// get all customers
 export const getCustomers = async (req: Request, res: Response) => {
   try {
     const customers = await advancedResults<CustomerDoc, CustomerDocumentResult & Document>(req.url, Customer);
@@ -68,6 +47,7 @@ export const getCustomers = async (req: Request, res: Response) => {
   }
 };
 
+// Get single customer by ID
 export const getCustomer = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
@@ -89,29 +69,18 @@ export const getCustomer = async (req: Request, res: Response) => {
   }
 };
 
+// Update customer
 export const updateCustomer = async (req: Request, res: Response) => {
   const body = req.body as RegisterCustomerRequestBody;
-  const { name, address, phoneNumber } = body;
+  const { name, phoneNumber, address } = body;
   const { id } = req.params;
-
   try {
     const { error } = createCustomerApiValidator.validate(req.body);
     if (error) {
       return res.status(422).json({ error: error.details[0].message });
     }
-
-    const [geoData] = await geocoder.geocode(address);
-    if (!geoData) {
-      return res.status(404).json({ message: 'Unable to geocode address' });
-    }
-
-    const { latitude, longitude } = geoData;
-
     if (id) {
-      await Customer.findByIdAndUpdate(
-        { _id: id },
-        { name, address, phoneNumber, geocode: { latitude, longitude } }
-      );
+      await Customer.findByIdAndUpdate({ _id: id }, { name, phoneNumber, address });
       return res.status(200).json({
         status: 'success'
       });
