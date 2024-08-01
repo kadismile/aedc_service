@@ -5,20 +5,20 @@ import { createCustomerApiValidator } from '../api_validators/customer-api-valid
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
 import Customer, { CustomerDocumentResult } from '../models/CustomerModel/CustomerModel.js';
-import { RegisterCustomerRequestBody, CustomerDoc } from '../types/customer.js';
+import { CustomerDoc,RegisterCustomerRequestBody } from '../types/customer.js';
 
 export const createCustomer = async (req: Request, res: Response) => {
   const body = req.body as RegisterCustomerRequestBody;
-  const { name, phoneNumber, address } = body;
+  const { name, phoneNumber } = body;
   try {
-    const { error } = createCustomerApiValidator.validate(req.body);
+    const { error, value } = createCustomerApiValidator.validate(req.body);
     if (error) {
       return res.status(422).json({ error: error.details[0].message });
     }
     const newCustomer = new Customer({
       name,
       phoneNumber,
-      address,
+      address: value.address,
       createdBy: req.staff._id
     });
     await newCustomer.save();
