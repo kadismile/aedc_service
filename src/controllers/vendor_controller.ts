@@ -5,7 +5,7 @@ import { createVendorApiValidator } from '../api_validators/vendor-api-validator
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
 import Vendor, { VendorDocumentResult } from '../models/VendorModel/VendorModel.js';
-import { RegisterVendorRequestBody,VendorDoc } from '../types/vendor/vendor.js';
+import { RegisterVendorRequestBody,VendorDoc } from '../types/vendor.js';
 
 
 
@@ -24,6 +24,7 @@ export const createVendor = async (req: Request, res: Response) => {
       address,
       phoneNumber,
       createdBy: req.staff._id
+
     });
     await newVendor.save();
     return res.status(201).json({
