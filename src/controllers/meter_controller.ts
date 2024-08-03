@@ -38,7 +38,7 @@ export const updateMeter = async (req: Request, res: Response) => {
   const { meterStatus } = body;
   // TODO: implement meter history here
   //const history = generateMeterHistory(meterStatus, customer)
-  // Ensure WHEN a meter is validated the address must match current address
+  //Ensure WHEN a meter is validated the address must match current address
 
   const { id } = req.params;
   try {
