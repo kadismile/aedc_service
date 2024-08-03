@@ -161,7 +161,7 @@ export const authorizeStaff = (req: Request, res: Response) => {
   } catch (error) {
     return res.status(500).json({
       status: 'failed',
-      error
+      message: 'internal server error'
     });
   }
 };

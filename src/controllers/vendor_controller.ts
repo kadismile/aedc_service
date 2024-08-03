@@ -5,11 +5,7 @@ import { createVendorApiValidator } from '../api_validators/vendor-api-validator
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
 import Vendor, { VendorDocumentResult } from '../models/VendorModel/VendorModel.js';
-import { RegisterVendorRequestBody,VendorDoc } from '../types/vendor.js';
-
-
-
-
+import { RegisterVendorRequestBody, VendorDoc } from '../types/vendor.js';
 
 export const createVendor = async (req: Request, res: Response) => {
   const body = req.body as RegisterVendorRequestBody;
@@ -19,12 +15,11 @@ export const createVendor = async (req: Request, res: Response) => {
     if (error) {
       return res.status(422).json({ error: error.details[0].message });
     }
-    const newVendor = new Vendor({ 
+    const newVendor = new Vendor({
       name,
       address,
       phoneNumber,
       createdBy: req.staff._id
-
     });
     await newVendor.save();
     return res.status(201).json({
@@ -52,7 +47,6 @@ export const getVendors = async (req: Request, res: Response) => {
   }
 };
 
-
 // Get single vendor by ID
 export const getVendor = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -64,7 +58,7 @@ export const getVendor = async (req: Request, res: Response) => {
         message: `Department not found with id ${id}`
       });
     }
-  
+
     return res.status(200).json({
       status: 'success',
       data: vendor
@@ -98,4 +92,3 @@ export const updateVendor = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
-  

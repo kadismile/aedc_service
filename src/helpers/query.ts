@@ -10,6 +10,7 @@ type AdvancedResult<T> = { [P in keyof T]?: Condition<T[P]> } & {
   limit: string;
   sort: string;
   page: string;
+  totalCount: number;
 };
 
 const QUERY_SELECTORS = ['gt', 'gte', 'lt', 'lte', 'eq'];
@@ -79,6 +80,7 @@ export const advancedResults = async <K, T extends Document>(
     return {
       results,
       count: results.length,
+      totalCount: total,
       page: page,
       limit: limit,
       prevPage: pagination.prev?.page || null,

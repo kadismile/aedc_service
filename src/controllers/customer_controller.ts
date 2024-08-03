@@ -9,24 +9,25 @@ import { CustomerDoc, RegisterCustomerRequestBody } from '../types/customer.js';
 
 export const createCustomer = async (req: Request, res: Response) => {
   const body = req.body as RegisterCustomerRequestBody;
+  const { name, phoneNumber, address } = body;
   try {
-    const { error, value } = createCustomerApiValidator.validate(body);
+    const { error } = createCustomerApiValidator.validate(req.body);
     if (error) {
       return res.status(422).json({ error: error.details[0].message });
     }
 
     const newCustomer = new Customer({
-      name: value.name,
-      phoneNumber: value.phoneNumber,
-      address: value.address,
-      createdBy: req.staff._id,
+      name,
+      phoneNumber,
+      address,
+      createdBy: req.staff._id
     });
 
     await newCustomer.save();
     return res.status(201).json({
       status: 'success',
       message: 'Customer created successfully',
-      data: newCustomer,
+      data: newCustomer
     });
   } catch (error) {
     Logger.error(error);
@@ -39,7 +40,7 @@ export const getCustomers = async (req: Request, res: Response) => {
     const customers = await advancedResults<CustomerDoc, CustomerDocumentResult & Document>(req.url, Customer);
     return res.status(200).json({
       status: 'success',
-      data: customers,
+      data: customers
     });
   } catch (error) {
     Logger.error(error);
@@ -54,13 +55,13 @@ export const getCustomer = async (req: Request, res: Response) => {
     if (!customer) {
       return res.status(404).json({
         status: 'failed',
-        message: `Customer not found with id ${id}`,
+        message: `Customer not found with id ${id}`
       });
     }
 
     return res.status(200).json({
       status: 'success',
-      data: customer,
+      data: customer
     });
   } catch (error) {
     Logger.error(error);
@@ -70,27 +71,49 @@ export const getCustomer = async (req: Request, res: Response) => {
 
 export const updateCustomer = async (req: Request, res: Response) => {
   const body = req.body as RegisterCustomerRequestBody;
+  const { name, phoneNumber, address } = body;
   const { id } = req.params;
   try {
-    const { error, value } = createCustomerApiValidator.validate(body);
+    const { error } = createCustomerApiValidator.validate(req.body);
     if (error) {
       return res.status(422).json({ error: error.details[0].message });
     }
-
     if (id) {
-      await Customer.findByIdAndUpdate(id, {
-        name: value.name,
-        phoneNumber: value.phoneNumber,
-        address: value.address,
-      });
-
+      await Customer.findByIdAndUpdate({ _id: id }, { name, phoneNumber, address });
       return res.status(200).json({
-        status: 'success',
-        message: 'Customer updated successfully',
+        status: 'success'
       });
     } else {
       return res.status(422).json({ error: 'id is required' });
     }
+  } catch (error) {
+    Logger.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getCustomersByState = async (req: Request, res: Response) => {
+  try {
+    const result = await Customer.aggregate([
+      {
+        $group: {
+          _id: '$address.state',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          state: '$_id',
+          count: 1
+        }
+      }
+    ]);
+
+    return res.status(200).json({
+      status: 'success',
+      data: result
+    });
   } catch (error) {
     Logger.error(error);
     return res.status(500).json({ message: 'Internal server error' });

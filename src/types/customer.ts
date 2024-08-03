@@ -1,19 +1,28 @@
-import { Document, Types } from 'mongoose';
+import { Types } from 'mongoose';
+
+import { AdvancedQueryResult } from './queryresults.js';
+import { STAFF_REGION } from './staff.js';
+
+export type AddressDoc = {
+  fullAddress: string;
+  state: STAFF_REGION;
+  type?: string;
+  longitude: number;
+  latitude: number;
+  /*   plusCode6Hex?: string;
+  plusCode?: string; */
+};
 
 export type CustomerDoc = {
   _id: Types.ObjectId;
   name: string;
+  meterNumber: string;
   phoneNumber: string;
-  address: {
-    fullAddress: string;
-    state: string;
-    longitude: number;
-    latitude: number;
-    geocode?: string;
-  };
+  address: AddressDoc;
   createdAt: Date;
   updatedAt: Date;
-  isActive: boolean;
-} & Document
+};
+
+export type AdvancedCustomerQueryResult = AdvancedQueryResult<CustomerDoc>;
 
 export type RegisterCustomerRequestBody = Omit<CustomerDoc, '_id' | 'createdAt' | 'updatedAt'>;

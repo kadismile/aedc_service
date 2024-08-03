@@ -8,7 +8,6 @@ import meterRouter from './meterRoutes.js';
 import staffRouter from './staffRoutes.js';
 import vendorRouter from './vendorRoutes.js';
 
-
 export type RouteConfig = {
   route: string;
   router: Router;
@@ -22,5 +21,4 @@ export const routerConfig: RouteConfig[] = [
   { route: '/meter', router: meterRouter },
   { route: '/vendor', router: vendorRouter },
   { route: '/customer', router: customerRouter }
-
 ];

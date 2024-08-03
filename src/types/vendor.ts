@@ -12,8 +12,6 @@ export type VendorDoc = {
   isActive: boolean;
 };
 
-
-
 export type AdvancedStaffsQueryResult = AdvancedQueryResult<VendorDoc>;
 
 export type RegisterVendorRequestBody = Omit<VendorDoc, '_id' | 'createdAt' | 'updatedAt'>;

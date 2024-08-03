@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "ts-node-esm ./dist/index.js | pino-pretty",
-    "dev": "nodemon --exec node --env-file=.env.development --loader ts-node/esm src/index.ts",
+    "dev": "npm run build && nodemon --exec node --env-file=.env.development --loader ts-node/esm src/index.ts",
     "local": "nodemon --exec node --env-file=.env.local --loader ts-node/esm src/index.ts",
     "production": "nodemon --exec node --env-file=.env.production --loader ts-node/esm src/index.ts",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --coverage",
@@ -22,6 +22,7 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.8.0",
+    "@faker-js/faker": "^8.4.1",
     "@types/bcrypt": "^5.0.2",
     "@types/body-parser": "^1.19.5",
     "@types/cors": "^2.8.17",
@@ -29,6 +30,7 @@
     "@types/hapi__joi": "^17.1.14",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/nodemailer": "^6.4.15",
+    "@types/open-location-code": "^1.0.0",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.6",
     "@typescript-eslint/eslint-plugin": "^7.17.0",
@@ -61,6 +63,8 @@
     "mongoose": "^8.5.1",
     "node-geocoder": "^4.3.0",
     "nodemailer": "^6.9.14",
+    "open-location-code": "^1.0.3",
+    "open-location-code-typescript": "^1.5.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.13.1"

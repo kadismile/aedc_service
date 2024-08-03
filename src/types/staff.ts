@@ -8,10 +8,10 @@ export enum STAFF_ROLE {
 }
 
 export enum STAFF_REGION {
-  ABUJA = 'abuja',
-  NASSARAWA = 'nassarawa',
-  KOGI = 'kogi',
-  NIGER = 'niger'
+  ABUJA = 'Abuja',
+  NASSARAWA = 'Nassarawa',
+  KOGI = 'Kogi',
+  NIGER = 'Niger'
 }
 
 export type StaffDoc = {

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 import Staff from '../models/StaffModel/StaffModel.js';
+import { STAFF_ROLE } from '../types/staff.js';
 
 export const authorize = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -43,8 +44,8 @@ export const authorize = async (req: Request, res: Response, next: NextFunction)
 
 export const restrictToRoles = (permitedRoles: string[]) => (req: Request, res: Response, next: NextFunction) => {
   try {
-    const role = req.staff.role;
-    if (role === 'admin' || permitedRoles.includes(role)) {
+    const role = req.staff?.role;
+    if ((role && role === STAFF_ROLE.ADMIN) || permitedRoles.includes(role)) {
       return next();
     } else {
       return res.status(401).json({

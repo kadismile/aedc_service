@@ -1,4 +1,3 @@
-
 import express from 'express';
 
 import { createVendor, getVendor, getVendors, updateVendor } from '../controllers/vendor_controller.js';
@@ -12,4 +11,3 @@ router.get('/:id', authorize, restrictToRoles(['admin']), getVendor);
 router.put('/:id', authorize, restrictToRoles(['admin']), updateVendor);
 
 export default router;
-

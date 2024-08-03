@@ -24,9 +24,10 @@ const meterSchema = new mongoose.Schema<MeterDocumentResult, MeterModel>(
       required: true,
       unique: true
     },
-    name: {
+    barcode: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     },
     typeOfMeter: {
       type: String,
@@ -47,11 +48,11 @@ const meterSchema = new mongoose.Schema<MeterDocumentResult, MeterModel>(
       ref: 'Vendor',
       required: [true, 'Please Add Vendor']
     },
-    isActive: {
-      type: Boolean,
-      default: true
-    },
     createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'Staff'
+    },
+    updatedBy: {
       type: Schema.Types.ObjectId,
       ref: 'Staff'
     }

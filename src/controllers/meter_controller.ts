@@ -1,25 +1,23 @@
 import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 
-import { createDeptApiValidator } from '../api_validators/department-api-validators.js';
-import { createMeterApiValidator } from '../api_validators/meter-api-validators.js';
+import { createMeterApiValidator, updateMeterApiValidator } from '../api_validators/meter-api-validators.js';
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
-import Department, { DepartmentDocumentResult } from '../models/DepartmentModel/DepartmentModel.js';
-import Meter from '../models/MeterModel/MeterModel.js';
-import { DepartmentDoc, RegisterDeptRequestBody } from '../types/department.js';
-import { RegisterMeterRequestBody } from '../types/meter.js';
+import Meter, { MeterDocumentResult } from '../models/MeterModel/MeterModel.js';
+import { MeterDoc, RegisterMeterRequestBody } from '../types/meter.js';
 
 export const createMeter = async (req: Request, res: Response) => {
   const body = req.body as RegisterMeterRequestBody;
-  const { name, meterNumber, typeOfMeter, vendor } = body;
+  const { meterNumber, typeOfMeter, vendor, meterStatus, barcode } = body;
   try {
     const { error } = createMeterApiValidator.validate(req.body);
     if (error) {
       return res.status(422).json({ error: error.details[0].message });
     }
     const createdBy = req.staff._id;
-    const newDept = new Meter({ name, meterNumber, typeOfMeter, vendor, createdBy });
+
+    const newDept = new Meter({ meterNumber, typeOfMeter, vendor, createdBy, meterStatus, barcode });
     await newDept.save();
     return res.status(201).json({
       status: 'success',
@@ -32,51 +30,21 @@ export const createMeter = async (req: Request, res: Response) => {
   }
 };
 
-export const getDepartments = async (req: Request, res: Response) => {
-  try {
-    const departments = await advancedResults<DepartmentDoc, DepartmentDocumentResult & Document>(req.url, Department);
-    return res.status(200).json({
-      status: 'success',
-      data: departments
-    });
-  } catch (error) {
-    Logger.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
-export const getDepartment = async (req: Request, res: Response) => {
+export const updateMeter = async (req: Request, res: Response) => {
+  const body = req.body as RegisterMeterRequestBody;
+  const { meterStatus } = body;
   const { id } = req.params;
   try {
-    const department = await Department.findOne<DepartmentDocumentResult>({ _id: id });
-    if (!department) {
-      return res.status(404).json({
-        status: 'failed',
-        message: `Department not found with id ${id}`
-      });
-    }
-
-    return res.status(200).json({
-      status: 'success',
-      data: department
-    });
-  } catch (error) {
-    Logger.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
-export const updateDepartment = async (req: Request, res: Response) => {
-  const body = req.body as RegisterDeptRequestBody;
-  const { name, acronym } = body;
-  const { id } = req.params;
-  try {
-    const { error } = createDeptApiValidator.validate(req.body);
+    const { error } = updateMeterApiValidator.validate(req.body);
     if (error) {
       return res.status(422).json({ error: error.details[0].message });
     }
+    const meter = await Meter.findOne({ _id: id });
+    if (!meter) {
+      return res.status(404).json({ message: 'meter not found' });
+    }
     if (id) {
-      await Department.findByIdAndUpdate({ _id: id }, { name, acronym });
+      await Meter.findByIdAndUpdate({ _id: id }, { meterStatus });
       return res.status(200).json({
         status: 'success'
       });
@@ -89,17 +57,113 @@ export const updateDepartment = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteDepartment = async (req: Request, res: Response) => {
+export const getMeter = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    if (id) {
-      await Department.findByIdAndUpdate({ _id: id }, { isActive: false });
-      return res.status(200).json({
-        status: 'success'
+    const meter = await Meter.findOne<MeterDocumentResult>({ _id: id });
+    if (!meter) {
+      return res.status(404).json({
+        status: 'failed',
+        message: `Meter not found with id ${id}`
       });
-    } else {
-      return res.status(422).json({ error: 'id is required' });
     }
+    return res.status(200).json({
+      status: 'success',
+      data: meter
+    });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getMeters = async (req: Request, res: Response) => {
+  try {
+    const staffs = await advancedResults<MeterDoc, MeterDocumentResult & Document>(req.url, Meter);
+    return res.status(200).json({
+      status: 'success',
+      data: staffs
+    });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getByBarcode = async (req: Request, res: Response) => {
+  const { barcode } = req.params;
+  try {
+    const meter = await Meter.findOne<MeterDocumentResult>({ barcode: barcode });
+    if (!meter) {
+      return res.status(404).json({
+        status: 'failed',
+        message: `Meter not found with barcode ${barcode}`
+      });
+    }
+    return res.status(200).json({
+      status: 'success',
+      data: meter
+    });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getMeterByVendor = async (req: Request, res: Response) => {
+  try {
+    const result = await Meter.aggregate([
+      {
+        $group: {
+          _id: '$vendor', // Group by vendor ObjectId
+          count: { $sum: 1 } // Count the number of meters for each vendor
+        }
+      },
+      {
+        $lookup: {
+          from: 'vendors', // Name of the collection where vendor details are stored
+          localField: '_id', // Field to join on (vendor ObjectId)
+          foreignField: '_id', // Field in the vendors collection to match (vendor ObjectId)
+          as: 'vendorDetails' // Name of the field to output
+        }
+      },
+      {
+        $unwind: '$vendorDetails' // Flatten the vendorDetails array
+      },
+      {
+        $project: {
+          _id: 0, // Exclude the _id field
+          vendorID: '$_id', // Include vendorID
+          vendorName: '$vendorDetails.name', // Include vendorName
+          count: 1 // Include the count of meters
+        }
+      }
+    ]);
+
+    return res.status(200).json({
+      status: 'success',
+      data: result
+    });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getMeterByNumber = async (req: Request, res: Response) => {
+  const { meterNumber } = req.params;
+  try {
+    const meter = await Meter.findOne<MeterDocumentResult>({ meterNumber: meterNumber });
+    if (!meter) {
+      return res.status(404).json({
+        status: 'failed',
+        message: `Meter not found with meter number ${meterNumber}`
+      });
+    }
+    return res.status(200).json({
+      status: 'success',
+      data: meter
+    });
   } catch (error) {
     Logger.error(error);
     return res.status(500).json({ message: 'Internal server error' });

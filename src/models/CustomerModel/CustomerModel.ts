@@ -1,6 +1,7 @@
 import mongoose, { Model } from 'mongoose';
 
-import { CustomerDoc } from '../../types/customer.js';
+import { AddressDoc, CustomerDoc } from '../../types/customer.js';
+import { STAFF_REGION } from '../../types/staff.js';
 import {
   BaseModelMethods,
   findActive,
@@ -12,6 +13,14 @@ import {
 type BaseDocument<T> = {
   _doc: T;
 };
+
+const addressSchema = new mongoose.Schema<AddressDoc>({
+  fullAddress: { type: String, required: true },
+  state: { type: String, enum: Object.values(STAFF_REGION), required: true },
+  type: { type: String },
+  longitude: { type: Number, required: true },
+  latitude: { type: Number, required: true }
+});
 
 export type CustomerDocumentResult = CustomerDoc & BaseDocument<CustomerDoc>;
 
@@ -30,31 +39,12 @@ const customerSchema = new mongoose.Schema<CustomerDocumentResult, CustomerModel
       unique: true
     },
     address: {
-      fullAddress: {
-        type: String,
-        required: true
-      },
-      state: {
-        type: String,
-        required: true,
-        enum: ['Abuja', 'Nassarawa', 'Kogi']
-      },
-      longitude: {
-        type: Number,
-        required: true
-      },
-      latitude: {
-        type: Number,
-        required: true
-      },
-      geocode: {
-        type: String,
-        required: true
-      }
+      type: addressSchema,
+      required: true
     },
-    isActive: {
-      type: Boolean,
-      default: true
+    meterNumber: {
+      type: String,
+      unique: true
     }
   },
   {

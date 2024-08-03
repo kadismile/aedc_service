@@ -5,4 +5,5 @@ export type AdvancedQueryResult<T> = {
   page: number;
   prevPage: number;
   nextPage: number;
+  totalCount: number;
 };
