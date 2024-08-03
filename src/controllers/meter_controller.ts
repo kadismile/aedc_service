@@ -33,6 +33,10 @@ export const createMeter = async (req: Request, res: Response) => {
 export const updateMeter = async (req: Request, res: Response) => {
   const body = req.body as RegisterMeterRequestBody;
   const { meterStatus } = body;
+  // TODO: implement meter history here
+  //const history = generateMeterHistory(meterStatus, customer)
+  //Ensure WHEN a meter is validated the address must match current address
+
   const { id } = req.params;
   try {
     const { error } = updateMeterApiValidator.validate(req.body);
@@ -151,21 +155,34 @@ export const getMeterByVendor = async (req: Request, res: Response) => {
 };
 
 export const getMeterByNumber = async (req: Request, res: Response) => {
-  const { meterNumber } = req.params;
+  const meterNumber = req.query['meter-number'] as string;
+
+  if (!meterNumber || typeof meterNumber !== 'string') {
+    return res.status(400).json({
+      status: 'failed',
+      message: 'Invalid or missing meter number query parameter'
+    });
+  }
+
+  Logger.info(`Searching for meters with meter number: ${meterNumber}`);
   try {
-    const meter = await Meter.findOne<MeterDocumentResult>({ meterNumber: meterNumber });
-    if (!meter) {
+    const regex = new RegExp(meterNumber, 'i');
+    const meters = await Meter.find<MeterDocumentResult>({ meterNumber: regex });
+
+    if (meters.length === 0) {
+      Logger.warn(`No meters found with meter number containing: ${meterNumber}`);
       return res.status(404).json({
         status: 'failed',
-        message: `Meter not found with meter number ${meterNumber}`
+        message: `No meters found with meter number containing: ${meterNumber}`
       });
     }
+
     return res.status(200).json({
       status: 'success',
-      data: meter
+      data: meters
     });
   } catch (error) {
-    Logger.error(error);
+    Logger.error(`Error searching meters with number ${meterNumber}: ${error}`);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };

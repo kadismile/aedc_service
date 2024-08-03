@@ -1,6 +1,6 @@
 import mongoose, { Model, Schema } from 'mongoose';
 
-import { METER_TYPE, MeterDoc } from '../../types/meter.js';
+import { METER_STATUS, METER_TYPE, MeterDoc } from '../../types/meter.js';
 import {
   BaseModelMethods,
   findActive,
@@ -28,6 +28,10 @@ const meterSchema = new mongoose.Schema<MeterDocumentResult, MeterModel>(
       type: String,
       required: true,
       unique: true
+    },
+    meterStatus: {
+      type: String,
+      enum: METER_STATUS
     },
     typeOfMeter: {
       type: String,

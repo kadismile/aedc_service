@@ -17,7 +17,7 @@ router.get('/', getMeters);
 router.get('/:id', getMeter);
 router.get('/barcode/:barcode', getByBarcode);
 router.get('/vendor/count', getMeterByVendor);
-router.get('/search-meter-number/:search-meter-number', getMeterByNumber);
+router.get('/meter-number/search', getMeterByNumber);
 router.put('/update-meter/:id', authorize, updateMeter);
 
 export default router;
