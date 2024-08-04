@@ -9,7 +9,9 @@ import {
 import { advancedResults } from '../helpers/query.js';
 import { passwordGenerator, sanitizeReturnedStaff } from '../helpers/staff_helper.js';
 import Logger from '../libs/logger.js';
+import History from '../models/HistoryModel/HistoryModel.js';
 import Staff, { StaffDocumentResult } from '../models/StaffModel/StaffModel.js';
+import { HistoryDoc } from '../types/history.js';
 import { RegisterStaffRequestBody, StaffDoc } from '../types/staff.js';
 
 export const createStaff = async (req: Request, res: Response) => {
@@ -158,6 +160,21 @@ export const authorizeStaff = (req: Request, res: Response) => {
         status: 'failed'
       });
     }
+  } catch (error) {
+    return res.status(500).json({
+      status: 'failed',
+      message: 'internal server error'
+    });
+  }
+};
+
+export const getHistoryofMeterScan = async (req: Request, res: Response) => {
+  try {
+    const histories = await advancedResults<HistoryDoc, StaffDocumentResult & Document>(req.url, History);
+    return res.status(200).json({
+      status: 'success',
+      data: histories.results
+    });
   } catch (error) {
     return res.status(500).json({
       status: 'failed',
