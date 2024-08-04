@@ -104,7 +104,9 @@ export const getMeters = async (req: Request, res: Response) => {
 export const getByBarcode = async (req: Request, res: Response) => {
   const { barcode } = req.params;
   try {
-    const meter = await Meter.findOne<MeterDocumentResult>({ barcode: barcode });
+    const meter = await Meter.findOne<MeterDocumentResult>({ barcode: barcode })
+      .populate('meterHistory', 'action staff -_id')
+      .populate('customer', 'address name -_id');
     if (!meter) {
       return res.status(404).json({
         status: 'failed',
