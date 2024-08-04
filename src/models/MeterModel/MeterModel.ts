@@ -40,7 +40,8 @@ const meterSchema = new mongoose.Schema<MeterDocumentResult, MeterModel>(
     },
     meterHistory: [
       {
-        type: String
+        type: Schema.Types.ObjectId,
+        ref: 'History'
       }
     ],
     customer: {
