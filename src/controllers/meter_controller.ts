@@ -2,10 +2,12 @@ import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 
 import { createMeterApiValidator, updateMeterApiValidator } from '../api_validators/meter-api-validators.js';
+import { generateMeterHistory } from '../helpers/meter_helper.js';
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
 import Meter, { MeterDocumentResult } from '../models/MeterModel/MeterModel.js';
 import { MeterDoc, RegisterMeterRequestBody } from '../types/meter.js';
+import { validateMeterStatus } from './../helpers/meter_helper.js';
 
 export const createMeter = async (req: Request, res: Response) => {
   const body = req.body as RegisterMeterRequestBody;
@@ -33,10 +35,6 @@ export const createMeter = async (req: Request, res: Response) => {
 export const updateMeter = async (req: Request, res: Response) => {
   const body = req.body as RegisterMeterRequestBody;
   const { meterStatus } = body;
-  // TODO: implement meter history here
-  //const history = generateMeterHistory(meterStatus, customer)
-  //Ensure WHEN a meter is validated the address must match current address
-
   const { id } = req.params;
   try {
     const { error } = updateMeterApiValidator.validate(req.body);
@@ -48,7 +46,14 @@ export const updateMeter = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'meter not found' });
     }
     if (id) {
-      await Meter.findByIdAndUpdate({ _id: id }, { meterStatus });
+      if (validateMeterStatus(meter, meterStatus)) {
+        const message = validateMeterStatus(meter, meterStatus);
+        return res.status(422).json({ error: message });
+      }
+      const updateMeter = await Meter.findByIdAndUpdate({ _id: id }, { meterStatus });
+
+      generateMeterHistory(updateMeter, req.staff);
+
       return res.status(200).json({
         status: 'success'
       });
@@ -64,7 +69,10 @@ export const updateMeter = async (req: Request, res: Response) => {
 export const getMeter = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const meter = await Meter.findOne<MeterDocumentResult>({ _id: id });
+    const meter = await Meter.findById(id)
+      .populate('meterHistory', 'action staff -_id')
+      .populate('customer', 'address name -_id')
+      .populate('vendor', 'address name -_id');
     if (!meter) {
       return res.status(404).json({
         status: 'failed',
@@ -97,7 +105,10 @@ export const getMeters = async (req: Request, res: Response) => {
 export const getByBarcode = async (req: Request, res: Response) => {
   const { barcode } = req.params;
   try {
-    const meter = await Meter.findOne<MeterDocumentResult>({ barcode: barcode });
+    const meter = await Meter.findOne<MeterDocumentResult>({ barcode: barcode })
+      .populate('meterHistory', 'action staff -_id')
+      .populate('customer', 'address name -_id')
+      .populate('vendor', 'address name -_id');
     if (!meter) {
       return res.status(404).json({
         status: 'failed',
@@ -119,27 +130,27 @@ export const getMeterByVendor = async (req: Request, res: Response) => {
     const result = await Meter.aggregate([
       {
         $group: {
-          _id: '$vendor', // Group by vendor ObjectId
-          count: { $sum: 1 } // Count the number of meters for each vendor
+          _id: '$vendor',
+          count: { $sum: 1 }
         }
       },
       {
         $lookup: {
-          from: 'vendors', // Name of the collection where vendor details are stored
-          localField: '_id', // Field to join on (vendor ObjectId)
-          foreignField: '_id', // Field in the vendors collection to match (vendor ObjectId)
-          as: 'vendorDetails' // Name of the field to output
+          from: 'vendors',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'vendorDetails'
         }
       },
       {
-        $unwind: '$vendorDetails' // Flatten the vendorDetails array
+        $unwind: '$vendorDetails'
       },
       {
         $project: {
-          _id: 0, // Exclude the _id field
-          vendorID: '$_id', // Include vendorID
-          vendorName: '$vendorDetails.name', // Include vendorName
-          count: 1 // Include the count of meters
+          _id: 0,
+          vendorID: '$_id',
+          vendorName: '$vendorDetails.name',
+          count: 1
         }
       }
     ]);
