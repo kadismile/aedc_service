@@ -22,7 +22,7 @@ export type MeterDoc = {
   barcode: string;
   meterStatus: METER_STATUS;
   typeOfMeter: METER_TYPE;
-  meterHistory: string[];
+  meterHistory: Types.ObjectId[];
   customer?: Types.ObjectId;
   vendor: Types.ObjectId;
   createdBy: Types.ObjectId;

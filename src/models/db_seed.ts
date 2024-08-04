@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { ObjectId } from 'mongodb';
 import { Types } from 'mongoose';
 
 import {
@@ -10,6 +11,7 @@ import {
   getRandomVendorId
 } from '../helpers/application_helper.js';
 import Logger from '../libs/logger.js';
+import { METER_STATUS } from '../types/meter.js';
 import Customer from './CustomerModel/CustomerModel.js';
 import Meter from './MeterModel/MeterModel.js';
 import Staff from './StaffModel/StaffModel.js';
@@ -107,7 +109,7 @@ const vendorSeedData = [
   }
 ];
 
-const createMeterData = async () => {
+const createMeterData = async (customerId: ObjectId) => {
   const vendor = await getRandomVendorId();
   const createdBy = await getAdminStaff();
   const updatedBy = await getAdminStaff();
@@ -117,6 +119,8 @@ const createMeterData = async () => {
       meterNumber: generateRandomNumber(11),
       barcode: generateRandomNumber(15),
       typeOfMeter: getRandomMeterType(),
+      customer: customerId,
+      meterStatus: METER_STATUS.ASSIGNED,
       vendor,
       createdBy,
       updatedBy
@@ -182,8 +186,8 @@ export const seedDBdata = async () => {
       });
 
       for (let i = 1; i <= 1000; i++) {
-        const meter = await Meter.create(await createMeterData());
         const customerToUpdate = customerMap.find(cus => i == cus.number);
+        const meter = await Meter.create(await createMeterData(customerToUpdate._id));
         await Customer.findByIdAndUpdate({ _id: customerToUpdate._id }, { meterNumber: meter[0].meterNumber });
         Logger.info('Meter Data Seeded Succesfully ....');
       }

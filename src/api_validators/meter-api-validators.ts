@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi';
 
-import { METER_TYPE } from '../types/meter.js';
+import { METER_STATUS, METER_TYPE } from '../types/meter.js';
 
 export const createMeterApiValidator = Joi.object({
   meterNumber: Joi.string().required(),
@@ -11,5 +11,7 @@ export const createMeterApiValidator = Joi.object({
 });
 
 export const updateMeterApiValidator = Joi.object({
-  meterStatus: Joi.string().required()
+  meterStatus: Joi.string()
+    .valid(...Object.values(METER_STATUS))
+    .required()
 });
