@@ -77,7 +77,8 @@ export const getMeter = async (req: Request, res: Response) => {
     const meter = await Meter.findById(id)
       .populate('meterHistory', 'action staff customer -_id')
       .populate('customer', 'address name -_id')
-      .populate('vendor', 'address name -_id');
+      .populate('vendor', 'address name -_id')
+      .populate('attachments', 'secure_url -_id');
     if (!meter) {
       return res.status(404).json({
         status: 'failed',
@@ -113,7 +114,8 @@ export const getByBarcode = async (req: Request, res: Response) => {
     const meter = await Meter.findOne<MeterDocumentResult>({ barcode: barcode })
       .populate('meterHistory', 'action staff -_id')
       .populate('customer', 'address name -_id')
-      .populate('vendor', 'address name -_id');
+      .populate('vendor', 'address name -_id')
+      .populate('attachments', 'secure_url -_id');
     if (!meter) {
       return res.status(404).json({
         status: 'failed',
