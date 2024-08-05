@@ -6,6 +6,7 @@ export type HistoryDoc = {
   _id: Types.ObjectId;
   staff: Types.ObjectId;
   entityId: Types.ObjectId;
+  customer: Types.ObjectId;
   entity: string;
   action: string;
   createdAt: Date;

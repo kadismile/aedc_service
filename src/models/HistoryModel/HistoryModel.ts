@@ -31,6 +31,9 @@ const historySchema = new mongoose.Schema<HistoryDocumentResult, HistoryModel>(
     entity: {
       type: String
     },
+    customer: {
+      type: Schema.Types.ObjectId
+    },
     action: {
       type: String
     }

@@ -1,9 +1,15 @@
 import Joi from '@hapi/joi';
 
+import { STAFF_REGION, STAFF_ROLE } from '../types/staff.js';
+
 export const createStaffApiValidator = Joi.object({
   fullName: Joi.string().required(),
-  role: Joi.string().valid('admin', 'installer').required(),
-  staffRegion: Joi.string().valid('nassarawa', 'abuja', 'kogi', 'niger').required(),
+  role: Joi.string()
+    .valid(...Object.values(STAFF_ROLE))
+    .required(),
+  staffRegion: Joi.string()
+    .valid(...Object.values(STAFF_REGION))
+    .required(),
   email: Joi.string()
     .email({ tlds: { allow: false } })
     .required(),
@@ -20,12 +26,15 @@ export const staffLoginApiValidator = Joi.object({
 
 export const updateStaffApiValidator = Joi.object({
   fullName: Joi.string(),
-  role: Joi.string().valid('admin', 'installer').required(),
+  role: Joi.string()
+    .valid(...Object.values(STAFF_ROLE))
+    .required(),
   email: Joi.string().email({ tlds: { allow: false } }),
   phoneNumber: Joi.string(),
   nickName: Joi.string(),
   id: Joi.string().required(),
-  isActive: Joi.boolean()
+  isActive: Joi.boolean(),
+  staffRegion: Joi.string().valid(...Object.values(STAFF_REGION))
 });
 
 export const changePasswordApiValidator = Joi.object({

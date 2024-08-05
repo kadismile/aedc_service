@@ -2,7 +2,7 @@ import Customer from '../models/CustomerModel/CustomerModel.js';
 import History from '../models/HistoryModel/HistoryModel.js';
 import Meter from '../models/MeterModel/MeterModel.js';
 import { METER_STATUS, MeterDoc } from '../types/meter.js';
-import { StaffDoc } from './../types/staff.js';
+import { STAFF_ROLE, StaffDoc } from './../types/staff.js';
 
 export const generateMeterHistory = async (meter: MeterDoc, staff: StaffDoc) => {
   try {
@@ -13,6 +13,7 @@ export const generateMeterHistory = async (meter: MeterDoc, staff: StaffDoc) => 
         staff: staff._id,
         entityId: meter._id,
         entity: 'meter',
+        customer,
         action
       });
       await history.save();
@@ -63,12 +64,24 @@ export const validateMeterStatus = (meter: MeterDoc, meterStatus: METER_STATUS) 
     message = `this meter cannot be verified at this moment it needed to be assigned to a customer`;
   }
 
-  if (meterStatus == METER_STATUS.VERIFIED && meter.meterStatus == METER_STATUS.VERIFIED) {
-    message = 'this meter has already been verified';
-  }
-
   if (message) {
     return message;
   }
+  return undefined;
+};
+
+export const meterUpdateStaffCheck = (meterStatus, role) => {
+  /* if (role == STAFF_ROLE.ADMIN) {
+    return true;
+  } */
+
+  if (meterStatus == METER_STATUS.VERIFIED && role == STAFF_ROLE.AEDC_STAFF) {
+    return true;
+  }
+
+  if (meterStatus == METER_STATUS.INSTALLED && role == STAFF_ROLE.INSTALLER) {
+    return true;
+  }
+
   return undefined;
 };

@@ -4,7 +4,9 @@ import { AdvancedQueryResult } from './queryresults.js';
 
 export enum STAFF_ROLE {
   ADMIN = 'admin',
-  INSTALLER = 'installer'
+  INSTALLER = 'installer',
+  AEDC_STAFF = 'aedc_staff',
+  MAP = 'meter_access_provider'
 }
 
 export enum STAFF_REGION {
