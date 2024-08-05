@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 
 import { createMeterApiValidator, updateMeterApiValidator } from '../api_validators/meter-api-validators.js';
+import { manageFileUpload } from '../helpers/file_upload.js';
 import { generateMeterHistory } from '../helpers/meter_helper.js';
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
@@ -18,9 +19,6 @@ export const createMeter = async (req: Request, res: Response) => {
       return res.status(422).json({ error: error.details[0].message });
     }
     const createdBy = req.staff._id;
-    // TODO: implement meter history here
-    //const history = generateMeterHistory(meterStatus, customer)
-
     const newDept = new Meter({ meterNumber, typeOfMeter, vendor, createdBy, meterStatus, barcode });
     await newDept.save();
     return res.status(201).json({
@@ -52,7 +50,12 @@ export const updateMeter = async (req: Request, res: Response) => {
         const message = validateMeterStatus(meter, meterStatus);
         return res.status(422).json({ error: message });
       }
-      const updateMeter = await Meter.findByIdAndUpdate({ _id: id }, { meterStatus });
+      const updateMeter = await Meter.findByIdAndUpdate({ _id: id }, { meterStatus }, { new: true });
+
+      if (req?.file) {
+        const { path, filename } = req.file;
+        await manageFileUpload(path, filename, updateMeter, 'meters');
+      }
 
       await generateMeterHistory(updateMeter, req.staff);
 
@@ -72,7 +75,7 @@ export const getMeter = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const meter = await Meter.findById(id)
-      .populate('meterHistory', 'action staff -_id')
+      .populate('meterHistory', 'action staff customer -_id')
       .populate('customer', 'address name -_id')
       .populate('vendor', 'address name -_id');
     if (!meter) {
