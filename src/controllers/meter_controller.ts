@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 import { createMeterApiValidator, updateMeterApiValidator } from '../api_validators/meter-api-validators.js';
 import { manageFileUpload } from '../helpers/file_upload.js';
-import { generateMeterHistory } from '../helpers/meter_helper.js';
+import { generateMeterHistory, meterUpdateStaffCheck } from '../helpers/meter_helper.js';
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
 import Meter, { MeterDocumentResult } from '../models/MeterModel/MeterModel.js';
@@ -41,6 +41,14 @@ export const updateMeter = async (req: Request, res: Response) => {
     if (error) {
       return res.status(422).json({ error: error.details[0].message });
     }
+
+    const staffCheck = meterUpdateStaffCheck(meterStatus, req.staff.role);
+    if (!staffCheck) {
+      return res
+        .status(422)
+        .json({ error: `You do not have the permissions to perform this operation as a ${req.staff.role}` });
+    }
+
     const meter = await Meter.findOne({ _id: id });
     if (!meter) {
       return res.status(404).json({ message: 'meter not found' });

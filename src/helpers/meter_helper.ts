@@ -2,7 +2,7 @@ import Customer from '../models/CustomerModel/CustomerModel.js';
 import History from '../models/HistoryModel/HistoryModel.js';
 import Meter from '../models/MeterModel/MeterModel.js';
 import { METER_STATUS, MeterDoc } from '../types/meter.js';
-import { StaffDoc } from './../types/staff.js';
+import { STAFF_ROLE, StaffDoc } from './../types/staff.js';
 
 export const generateMeterHistory = async (meter: MeterDoc, staff: StaffDoc) => {
   try {
@@ -67,5 +67,21 @@ export const validateMeterStatus = (meter: MeterDoc, meterStatus: METER_STATUS) 
   if (message) {
     return message;
   }
+  return undefined;
+};
+
+export const meterUpdateStaffCheck = (meterStatus, role) => {
+  /* if (role == STAFF_ROLE.ADMIN) {
+    return true;
+  } */
+
+  if (meterStatus == METER_STATUS.VERIFIED && role == STAFF_ROLE.AEDC_STAFF) {
+    return true;
+  }
+
+  if (meterStatus == METER_STATUS.INSTALLED && role == STAFF_ROLE.MAP) {
+    return true;
+  }
+
   return undefined;
 };
