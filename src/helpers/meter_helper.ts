@@ -13,6 +13,7 @@ export const generateMeterHistory = async (meter: MeterDoc, staff: StaffDoc) => 
         staff: staff._id,
         entityId: meter._id,
         entity: 'meter',
+        customer,
         action
       });
       await history.save();
@@ -61,10 +62,6 @@ export const validateMeterStatus = (meter: MeterDoc, meterStatus: METER_STATUS) 
 
   if (meterStatus == METER_STATUS.ASSIGNED && !meter.customer) {
     message = `this meter cannot be verified at this moment it needed to be assigned to a customer`;
-  }
-
-  if (meterStatus == METER_STATUS.VERIFIED && meter.meterStatus == METER_STATUS.VERIFIED) {
-    message = 'this meter has already been verified';
   }
 
   if (message) {

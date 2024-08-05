@@ -168,7 +168,7 @@ export const authorizeStaff = (req: Request, res: Response) => {
   }
 };
 
-export const getHistoryofMeterScan = async (req: Request, res: Response) => {
+export const getHistoryOfMeterScan = async (req: Request, res: Response) => {
   try {
     const histories = await advancedResults<HistoryDoc, StaffDocumentResult & Document>(req.url, History);
     return res.status(200).json({

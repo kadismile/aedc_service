@@ -8,6 +8,7 @@ import { RouteConfig, routerConfig } from './routes/config.js';
 const app = express();
 app.use(express.json());
 app.use((cors as (options: cors.CorsOptions) => express.RequestHandler)({}));
+app.use(express.urlencoded({ extended: true }));
 
 //swagger implementation
 const domainUrl = process.env.DOMAIN_URL || '';
@@ -47,6 +48,13 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 routerConfig.forEach(({ route, router }: RouteConfig) => {
   app.use(route, router);
+});
+
+app.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', '*');
+  res.header('Access-Control-Allow-Header', 'Origin, X-Requested-with, Content-Type, Accept, Authorization');
+  next();
 });
 
 app.use((req, res) => res.status(404).json());
