@@ -79,7 +79,7 @@ export const meterUpdateStaffCheck = (meterStatus, role) => {
     return true;
   }
 
-  if (meterStatus == METER_STATUS.INSTALLED && role == STAFF_ROLE.MAP) {
+  if (meterStatus == METER_STATUS.INSTALLED && role == STAFF_ROLE.INSTALLER) {
     return true;
   }
 
