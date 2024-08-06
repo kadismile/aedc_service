@@ -26,6 +26,7 @@ export type MeterDoc = {
   customer?: Types.ObjectId;
   attachments?: Types.ObjectId[];
   vendor: Types.ObjectId;
+  staff: Types.ObjectId;
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
   createdAt: Date;

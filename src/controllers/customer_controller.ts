@@ -38,6 +38,7 @@ export const createCustomer = async (req: Request, res: Response) => {
 export const getCustomers = async (req: Request, res: Response) => {
   try {
     const customers = await advancedResults<CustomerDoc, CustomerDocumentResult & Document>(req.url, Customer);
+    await Customer.populate(customers.results, { path: 'meterNumber', select: '' });
     return res.status(200).json({
       status: 'success',
       data: customers

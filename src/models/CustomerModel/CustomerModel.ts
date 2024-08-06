@@ -1,4 +1,4 @@
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 
 import { AddressDoc, CustomerDoc } from '../../types/customer.js';
 import { STAFF_REGION } from '../../types/staff.js';
@@ -43,8 +43,8 @@ const customerSchema = new mongoose.Schema<CustomerDocumentResult, CustomerModel
       required: true
     },
     meterNumber: {
-      type: String,
-      unique: true
+      type: Schema.Types.ObjectId,
+      ref: 'Meter'
     }
   },
   {

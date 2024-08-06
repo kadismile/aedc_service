@@ -16,7 +16,7 @@ export type AddressDoc = {
 export type CustomerDoc = {
   _id: Types.ObjectId;
   name: string;
-  meterNumber: string;
+  meterNumber: Types.ObjectId;
   phoneNumber: string;
   address: AddressDoc;
   createdAt: Date;

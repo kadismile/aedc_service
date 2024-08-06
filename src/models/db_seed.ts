@@ -34,7 +34,7 @@ const staffSeedData = [
     createdBy: '66056a0b8cddbeac52b7221f'
   },
   {
-    _id: '65f343be0b30444e0835c499',
+    _id: '65f343be0b30444e0835c411',
     email: 'blonde@gmail.com',
     password: process.env.DEFAULT_APP_PASSWORD,
     phoneNumber: '07066665027',
@@ -46,12 +46,66 @@ const staffSeedData = [
 
   {
     _id: '65f89585fd782e2be490ef3e',
-    email: 'cleopatra@gmal.com',
+    email: 'cleopatra@gmail.com',
     password: process.env.DEFAULT_APP_PASSWORD,
     phoneNumber: '07064555027',
     nickName: 'Cleopatra',
     fullName: 'Cleopatra Odemwingie',
     role: 'installer',
+    createdBy: '66056a0b8cddbeac52b7221f'
+  },
+
+  {
+    _id: '66f89585fd782e2be530ef3e',
+    email: 'philip@gmail.com',
+    password: process.env.DEFAULT_APP_PASSWORD,
+    phoneNumber: '07064234027',
+    nickName: 'Philip',
+    fullName: 'Philip  Anka',
+    role: 'installer',
+    createdBy: '66056a0b8cddbeac52b7221f'
+  },
+
+  {
+    _id: '66f89235fd782e2be530ef3e',
+    email: 'nehemiah@gmail.com',
+    password: process.env.DEFAULT_APP_PASSWORD,
+    phoneNumber: '07064111059',
+    nickName: 'Nehi',
+    fullName: 'Nehimiah  Puininin',
+    role: 'installer',
+    createdBy: '66056a0b8cddbeac52b7221f'
+  },
+  {
+    _id: '66ad35383d9ac5f396732d81',
+    email: 'abdul@gmaill.com',
+    password: process.env.DEFAULT_APP_PASSWORD,
+    phoneNumber: '07064454059',
+    nickName: 'Abdul',
+    fullName: 'Abdul  Ibrahim',
+    role: 'installer',
+    createdBy: '66056a0b8cddbeac52b7221f'
+  },
+  {
+    _id: '66ad35393d9ac5f396732d8b',
+    email: 'william@gmaill.com',
+    password: process.env.DEFAULT_APP_PASSWORD,
+    phoneNumber: '07064239058',
+    nickName: 'William',
+    fullName: 'William Goodwill',
+    role: 'aedc_staff',
+    createdBy: '66056a0b8cddbeac52b7221f'
+  },
+
+  {
+    _id: '66ad353c3d9ac5f396732d9f',
+    email: 'ikadismile@gmaill.com',
+    password: process.env.DEFAULT_APP_PASSWORD,
+    phoneNumber: '07064239214',
+    nickName: 'Onogie',
+    fullName: 'Onogie Ibrahim',
+    vendor: '66a8d7f078390e69e094e58d',
+    role: 'meter_access_provider',
     createdBy: '66056a0b8cddbeac52b7221f'
   }
 ];
