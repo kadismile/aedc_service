@@ -59,6 +59,10 @@ const staffSchema = new mongoose.Schema<StaffDocumentResult, StaffModel>(
       type: String,
       enum: STAFF_REGION
     },
+    vendor: {
+      type: Schema.Types.ObjectId,
+      ref: 'Vendor'
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'Staff',

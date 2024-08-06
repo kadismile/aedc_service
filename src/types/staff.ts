@@ -29,6 +29,7 @@ export type StaffDoc = {
   staffRegion: STAFF_REGION;
   createdBy: Types.ObjectId;
   department: Types.ObjectId;
+  vendor: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
   isActive: boolean;
