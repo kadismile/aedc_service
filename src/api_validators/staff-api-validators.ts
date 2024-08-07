@@ -4,6 +4,7 @@ import { STAFF_REGION, STAFF_ROLE } from '../types/staff.js';
 
 export const createStaffApiValidator = Joi.object({
   fullName: Joi.string().required(),
+  vendor: Joi.string(),
   role: Joi.string()
     .valid(...Object.values(STAFF_ROLE))
     .required(),
@@ -26,6 +27,7 @@ export const staffLoginApiValidator = Joi.object({
 
 export const updateStaffApiValidator = Joi.object({
   fullName: Joi.string(),
+  vendor: Joi.string(),
   role: Joi.string()
     .valid(...Object.values(STAFF_ROLE))
     .required(),
