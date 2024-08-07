@@ -5,6 +5,7 @@ import {
   createMeter,
   getByBarcode,
   getMeter,
+  getMeterByNumber,
   getMeterByVendor,
   getMeters,
   updateMeter
@@ -21,5 +22,6 @@ router.get('/barcode/:barcode', getByBarcode);
 router.get('/vendor/count', getMeterByVendor);
 router.put('/update-meter/:id', authorize, upload.single('fileUpload'), updateMeter);
 router.post('/assign/', authorize, assignMeterToStaff);
+
 
 export default router;

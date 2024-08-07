@@ -5,6 +5,7 @@ import customerRouter from './customerRoutes.js';
 import departmentRouter from './departmentRoutes.js';
 import indexRouter from './index.js';
 import meterRouter from './meterRoutes.js';
+import searchRouter from './searchRoutes.js';
 import staffRouter from './staffRoutes.js';
 import vendorRouter from './vendorRoutes.js';
 
@@ -20,5 +21,6 @@ export const routerConfig: RouteConfig[] = [
   { route: '/department', router: departmentRouter },
   { route: '/meter', router: meterRouter },
   { route: '/vendor', router: vendorRouter },
-  { route: '/customer', router: customerRouter }
+  { route: '/customer', router: customerRouter },
+  { route: '/search', router: searchRouter }
 ];
