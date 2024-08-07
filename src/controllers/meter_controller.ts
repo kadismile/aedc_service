@@ -6,8 +6,11 @@ import { manageFileUpload } from '../helpers/file_upload.js';
 import { generateMeterHistory, meterUpdateStaffCheck } from '../helpers/meter_helper.js';
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
+import Assignemnt from '../models/AssignmentModel/AssigmentModel.js';
 import Meter, { MeterDocumentResult } from '../models/MeterModel/MeterModel.js';
-import { MeterDoc, RegisterMeterRequestBody } from '../types/meter.js';
+import Staff from '../models/StaffModel/StaffModel.js';
+import { METER_STATUS, MeterDoc, RegisterMeterRequestBody } from '../types/meter.js';
+import { STAFF_ROLE } from '../types/staff.js';
 import { validateMeterStatus } from './../helpers/meter_helper.js';
 
 export const createMeter = async (req: Request, res: Response) => {
@@ -180,6 +183,40 @@ export const getMeterByVendor = async (req: Request, res: Response) => {
   }
 };
 
+export const assignMeterToStaff = async (req: Request, res: Response) => {
+  const body = req.body as { staffId: string; meterId: string };
+  const { staffId, meterId } = body;
+  try {
+    if (!staffId || !meterId) {
+      return res.status(422).json({ error: 'both staffId & meterId is required' });
+    }
+
+    const meter = await Meter.findOne({ _id: meterId, meterStatus: METER_STATUS.ASSIGNED });
+    if (!meter) {
+      return res.status(404).json({ message: 'meter not found' });
+    }
+
+    const staff = await Staff.findOne({ _id: staffId, role: STAFF_ROLE.INSTALLER });
+    if (!staff) {
+      return res.status(404).json({ message: 'staff not found' });
+    }
+    const assignment = new Assignemnt({
+      staff: staffId,
+      meter: meterId,
+      createdBy: req.staff._id
+    });
+    await assignment.save();
+
+    return res.status(200).json({
+      status: 'success',
+      message: `meter successfully assigned to ${staff.fullName}`
+    });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 export const getMeterByNumber = async (req: Request, res: Response) => {
   const meterNumber = req.query['meter-number'] as string;
 
@@ -212,3 +249,4 @@ export const getMeterByNumber = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+

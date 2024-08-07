@@ -11,12 +11,13 @@ import { passwordGenerator, sanitizeReturnedStaff } from '../helpers/staff_helpe
 import Logger from '../libs/logger.js';
 import History from '../models/HistoryModel/HistoryModel.js';
 import Staff, { StaffDocumentResult } from '../models/StaffModel/StaffModel.js';
+import Vendor from '../models/VendorModel/VendorModel.js';
 import { HistoryDoc } from '../types/history.js';
 import { RegisterStaffRequestBody, StaffDoc } from '../types/staff.js';
 
 export const createStaff = async (req: Request, res: Response) => {
   const body = req.body as RegisterStaffRequestBody;
-  const { email, phoneNumber, nickName, fullName, role, staffRegion } = body;
+  const { email, vendor, phoneNumber, nickName, fullName, role, staffRegion } = body;
   const createdBy = req.staff._id;
   const password = passwordGenerator();
   try {
@@ -26,6 +27,7 @@ export const createStaff = async (req: Request, res: Response) => {
     }
     const newStaff = new Staff({
       email,
+      vendor,
       password,
       phoneNumber,
       nickName,
@@ -180,5 +182,28 @@ export const getHistoryOfMeterScan = async (req: Request, res: Response) => {
       status: 'failed',
       message: 'internal server error'
     });
+  }
+};
+
+export const getStaffsByVendor = async (req: Request, res: Response) => {
+  const { vendorId } = req.params;
+  try {
+    const vendor = await Vendor.findById(vendorId);
+    await Staff.findByIdAndUpdate({ _id: '66ad35383d9ac5f396732d81' }, { vendor: '66056a0b8cddbeac52b7221f' });
+
+    if (!vendor) {
+      return res.status(404).json({
+        status: 'failed',
+        message: `No vendor found with vendorId ${vendorId}`
+      });
+    }
+    const staffMembers = await Staff.find({ vendor: vendorId });
+    return res.status(200).json({
+      status: 'success',
+      data: staffMembers
+    });
+  } catch (error) {
+    console.error('Error fetching staff members by vendor:', error);
+    throw error;
   }
 };

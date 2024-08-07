@@ -1,6 +1,7 @@
 import express from 'express';
 
 import {
+  assignMeterToStaff,
   createMeter,
   getByBarcode,
   getMeter,
@@ -20,6 +21,7 @@ router.get('/:id', getMeter);
 router.get('/barcode/:barcode', getByBarcode);
 router.get('/vendor/count', getMeterByVendor);
 router.put('/update-meter/:id', authorize, upload.single('fileUpload'), updateMeter);
+router.post('/assign/', authorize, assignMeterToStaff);
 
 
 export default router;
