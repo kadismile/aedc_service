@@ -16,10 +16,10 @@ import { authorize, restrictToRoles } from '../middleware/permission-middleware.
 const router = express.Router();
 
 router.post('/', authorize, restrictToRoles(['admin']), createMeter);
-router.get('/', getMeters);
-router.get('/:id', getMeter);
-router.get('/barcode/:barcode', getByBarcode);
-router.get('/vendor/count', getMeterByVendor);
+router.get('/', authorize, getMeters);
+router.get('/:id', authorize, getMeter);
+router.get('/barcode/:barcode', authorize, getByBarcode);
+router.get('/vendor/count', authorize, getMeterByVendor);
 router.put('/update-meter/:id', authorize, upload.single('fileUpload'), updateMeter);
 router.post('/assign/', authorize, assignMeterToStaff);
 
