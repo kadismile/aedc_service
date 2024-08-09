@@ -118,6 +118,7 @@ export const changePassword = async (req: Request, res: Response) => {
 export const getStaffs = async (req: Request, res: Response) => {
   try {
     const staffs = await advancedResults<StaffDoc, StaffDocumentResult & Document>(req.url, Staff);
+    await Staff.populate(staffs.results, { path: 'vendor', select: 'name -_id' });
     return res.status(200).json({
       status: 'success',
       data: staffs

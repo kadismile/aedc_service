@@ -68,7 +68,7 @@ export const updateMeter = async (req: Request, res: Response) => {
         await manageFileUpload(path, filename, updateMeter, 'meters');
       }
 
-      generateMeterHistory(updateMeter, req.staff);
+      await generateMeterHistory(updateMeter, req.staff);
 
       return res.status(200).json({
         status: 'success'
@@ -108,10 +108,12 @@ export const getMeter = async (req: Request, res: Response) => {
 
 export const getMeters = async (req: Request, res: Response) => {
   try {
-    const staffs = await advancedResults<MeterDoc, MeterDocumentResult & Document>(req.url, Meter);
+    const meters = await advancedResults<MeterDoc, MeterDocumentResult & Document>(req.url, Meter);
+    await Meter.populate(meters.results, { path: 'customer', select: 'name -_id' });
+    await Meter.populate(meters.results, { path: 'vendor', select: 'name -_id' });
     return res.status(200).json({
       status: 'success',
-      data: staffs
+      data: meters
     });
   } catch (error) {
     Logger.error(error);
@@ -216,37 +218,3 @@ export const assignMeterToStaff = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
-
-export const getMeterByNumber = async (req: Request, res: Response) => {
-  const meterNumber = req.query['meter-number'] as string;
-
-  if (!meterNumber || typeof meterNumber !== 'string') {
-    return res.status(400).json({
-      status: 'failed',
-      message: 'Invalid or missing meter number query parameter'
-    });
-  }
-
-  Logger.info(`Searching for meters with meter number: ${meterNumber}`);
-  try {
-    const regex = new RegExp(meterNumber, 'i');
-    const meters = await Meter.find<MeterDocumentResult>({ meterNumber: regex });
-
-    if (meters.length === 0) {
-      Logger.warn(`No meters found with meter number containing: ${meterNumber}`);
-      return res.status(404).json({
-        status: 'failed',
-        message: `No meters found with meter number containing: ${meterNumber}`
-      });
-    }
-
-    return res.status(200).json({
-      status: 'success',
-      data: meters
-    });
-  } catch (error) {
-    Logger.error(`Error searching meters with number ${meterNumber}: ${error}`);
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
