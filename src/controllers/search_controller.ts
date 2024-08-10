@@ -7,7 +7,7 @@ import Vendor from '../models/VendorModel/VendorModel.js';
 import { SearchRequest } from '../types/search.js';
 
 export const search = async (req: Request, res: Response) => {
-  const { model, searchParams }: SearchRequest = req.body;
+  const { model, searchParams } = req.body as SearchRequest;
 
   if (!model || !searchParams) {
     return res.status(400).json({
@@ -20,12 +20,7 @@ export const search = async (req: Request, res: Response) => {
     let results;
     const regex = new RegExp(searchParams, 'i');
     const query = {
-      $or: [
-        { meterNumber: regex },
-        { barcode: regex },
-        { name: regex },
-        { phoneNumber: regex }
-      ]
+      $or: [{ meterNumber: regex }, { barcode: regex }, { name: regex }, { phoneNumber: regex }]
     };
 
     switch (model) {
@@ -45,7 +40,7 @@ export const search = async (req: Request, res: Response) => {
         });
     }
 
-    if (!results || results.length === 0) {
+    if (results?.length === 0) {
       return res.status(404).json({
         status: 'failed',
         message: `No results found for model: ${model} with searchParams: ${searchParams}`
@@ -54,7 +49,7 @@ export const search = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       status: 'success',
-      data: results,
+      data: results
     });
   } catch (error) {
     Logger.error(`Error searching ${model} with params ${searchParams}: ${error}`);

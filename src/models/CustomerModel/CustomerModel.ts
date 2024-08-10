@@ -14,7 +14,7 @@ type BaseDocument<T> = {
   _doc: T;
 };
 
-const addressSchema = new mongoose.Schema<AddressDoc>({
+export const addressSchema = new mongoose.Schema<AddressDoc>({
   fullAddress: { type: String, required: true },
   state: { type: String, enum: Object.values(STAFF_REGION), required: true },
   type: { type: String },

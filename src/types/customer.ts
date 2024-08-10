@@ -9,8 +9,6 @@ export type AddressDoc = {
   type?: string;
   longitude: number;
   latitude: number;
-  /*   plusCode6Hex?: string;
-  plusCode?: string; */
 };
 
 export type CustomerDoc = {

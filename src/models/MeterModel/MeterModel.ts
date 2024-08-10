@@ -1,6 +1,7 @@
 import mongoose, { Model, Schema } from 'mongoose';
 
 import { METER_STATUS, METER_TYPE, MeterDoc } from '../../types/meter.js';
+import { addressSchema } from '../CustomerModel/CustomerModel.js';
 import {
   BaseModelMethods,
   findActive,
@@ -47,6 +48,10 @@ const meterSchema = new mongoose.Schema<MeterDocumentResult, MeterModel>(
     customer: {
       type: Schema.Types.ObjectId,
       ref: 'Customer'
+    },
+    address: {
+      type: addressSchema,
+      required: true
     },
     vendor: {
       type: Schema.Types.ObjectId,

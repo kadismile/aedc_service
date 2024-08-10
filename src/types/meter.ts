@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 
+import { AddressDoc } from './customer.js';
 import { AdvancedQueryResult } from './queryresults.js';
 
 export enum METER_TYPE {
@@ -10,14 +11,16 @@ export enum METER_TYPE {
 }
 
 export enum METER_STATUS {
-  VERIFIED = 'verified',
+  ACTIVATED = 'activated',
   INSTALLED = 'installed',
-  ASSIGNED = 'assigned'
+  ASSIGNED = 'assigned',
+  COMMISIONED = 'commisioned'
 }
 
 export type MeterDoc = {
   _id: Types.ObjectId;
   id: string;
+  address: AddressDoc;
   meterNumber: string;
   barcode: string;
   meterStatus: METER_STATUS;

@@ -8,4 +8,3 @@ const router = express.Router();
 router.post('/search-resource', authorize, restrictToRoles(['admin']), search);
 
 export default router;
-
