@@ -13,5 +13,11 @@ export const createMeterApiValidator = Joi.object({
 export const updateMeterApiValidator = Joi.object({
   meterStatus: Joi.string()
     .valid(...Object.values(METER_STATUS))
-    .required()
+    .required(),
+  address: Joi.object({
+    fullAddress: Joi.string().required(),
+    longitude: Joi.number().required(),
+    latitude: Joi.number().required(),
+    state: Joi.string().required()
+  }).required()
 });

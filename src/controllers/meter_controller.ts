@@ -9,6 +9,7 @@ import Logger from '../libs/logger.js';
 import Assignemnt from '../models/AssignmentModel/AssigmentModel.js';
 import Meter, { MeterDocumentResult } from '../models/MeterModel/MeterModel.js';
 import Staff from '../models/StaffModel/StaffModel.js';
+import Vendor from '../models/VendorModel/VendorModel.js';
 import { METER_STATUS, MeterDoc, RegisterMeterRequestBody } from '../types/meter.js';
 import { STAFF_ROLE } from '../types/staff.js';
 import { validateMeterStatus } from './../helpers/meter_helper.js';
@@ -37,7 +38,7 @@ export const createMeter = async (req: Request, res: Response) => {
 
 export const updateMeter = async (req: Request, res: Response) => {
   const body = req.body as RegisterMeterRequestBody;
-  const { meterStatus } = body;
+  const { meterStatus, address } = body;
   const { id } = req.params;
   try {
     const { error } = updateMeterApiValidator.validate(req.body);
@@ -61,14 +62,15 @@ export const updateMeter = async (req: Request, res: Response) => {
         const message = validateMeterStatus(meter, meterStatus);
         return res.status(422).json({ error: message });
       }
-      const updateMeter = await Meter.findByIdAndUpdate({ _id: id }, { meterStatus }, { new: true });
+      const updateMeter = await Meter.findByIdAndUpdate({ _id: id }, { meterStatus, address }, { new: true });
 
       if (req?.file) {
         const { path, filename } = req.file;
         await manageFileUpload(path, filename, updateMeter, 'meters');
       }
 
-      await generateMeterHistory(updateMeter, req.staff);
+      const vendor = await Vendor.findOne({ vendor: req.staff.vendor });
+      await generateMeterHistory(updateMeter, req.staff, vendor);
 
       return res.status(200).json({
         status: 'success'
@@ -109,8 +111,10 @@ export const getMeter = async (req: Request, res: Response) => {
 export const getMeters = async (req: Request, res: Response) => {
   try {
     const meters = await advancedResults<MeterDoc, MeterDocumentResult & Document>(req.url, Meter);
-    await Meter.populate(meters.results, { path: 'customer', select: 'name -_id' });
+    await Meter.populate(meters.results, { path: 'customer', select: 'name address -_id' });
     await Meter.populate(meters.results, { path: 'vendor', select: 'name -_id' });
+    await Meter.populate(meters.results, { path: 'attachments', select: 'secure_url -_id' });
+    await Meter.populate(meters.results, { path: 'meterHistory', select: 'action createdAt -_id' });
     return res.status(200).json({
       status: 'success',
       data: meters

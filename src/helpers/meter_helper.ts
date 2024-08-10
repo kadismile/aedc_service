@@ -2,9 +2,10 @@ import Customer from '../models/CustomerModel/CustomerModel.js';
 import History from '../models/HistoryModel/HistoryModel.js';
 import Meter from '../models/MeterModel/MeterModel.js';
 import { METER_STATUS, MeterDoc } from '../types/meter.js';
+import { VendorDoc } from '../types/vendor.js';
 import { STAFF_ROLE, StaffDoc } from './../types/staff.js';
 
-export const generateMeterHistory = async (meter: MeterDoc, staff: StaffDoc) => {
+export const generateMeterHistory = async (meter: MeterDoc, staff: StaffDoc, vendor: VendorDoc) => {
   try {
     const customer = await Customer.findOne({ _id: meter.customer });
 
@@ -30,13 +31,13 @@ export const generateMeterHistory = async (meter: MeterDoc, staff: StaffDoc) => 
     }
 
     if (meter.meterStatus === METER_STATUS.INSTALLED) {
-      const action = `A new meter as just been installed in ${customer.address.fullAddress}`;
+      const action = `A new meter as just been installed in ${customer.address.fullAddress} by ${staff.fullName} of ${vendor.name}`;
       await createHistoryAndUpdateMeter(action);
       return;
     }
 
-    if (meter.meterStatus === METER_STATUS.VERIFIED) {
-      const action = `meter as just been verified in ${customer.address.fullAddress}`;
+    if (meter.meterStatus === METER_STATUS.ACTIVATED) {
+      const action = `meter as just been activated in ${customer.address.fullAddress} by ${staff.fullName}`;
       await createHistoryAndUpdateMeter(action);
       return;
     }
@@ -52,7 +53,7 @@ export const validateMeterStatus = (meter: MeterDoc, meterStatus: METER_STATUS) 
     message = `this meter action "${meterStatus}" as already been done`;
   }
 
-  if (meterStatus == METER_STATUS.VERIFIED && meter.meterStatus == METER_STATUS.ASSIGNED) {
+  if (meterStatus == METER_STATUS.ACTIVATED && meter.meterStatus == METER_STATUS.ASSIGNED) {
     message = `this meter cannot be ${meterStatus} at this moment, it needs to be installed`;
   }
 
@@ -75,7 +76,7 @@ export const meterUpdateStaffCheck = (meterStatus, role) => {
     return true;
   } */
 
-  if (meterStatus == METER_STATUS.VERIFIED && role == STAFF_ROLE.AEDC_STAFF) {
+  if (meterStatus == METER_STATUS.ACTIVATED && role == STAFF_ROLE.AEDC_STAFF) {
     return true;
   }
 
