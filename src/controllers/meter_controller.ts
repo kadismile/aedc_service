@@ -70,7 +70,7 @@ export const updateMeter = async (req: Request, res: Response) => {
       }
 
       const vendor = await Vendor.findOne({ vendor: req.staff.vendor });
-      await generateMeterHistory(updateMeter, req.staff, vendor);
+      await generateMeterHistory(updateMeter, req.staff, vendor, address);
 
       return res.status(200).json({
         status: 'success'
@@ -217,6 +217,51 @@ export const assignMeterToStaff = async (req: Request, res: Response) => {
       status: 'success',
       message: `meter successfully assigned to ${staff.fullName}`
     });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const mapScan = async (req: Request, res: Response) => {
+  const body = req.body as RegisterMeterRequestBody;
+  const { meterStatus, address, meterNumber, barcode, typeOfMeter } = body;
+  try {
+    const { error } = createMeterApiValidator.validate(req.body);
+    if (error) {
+      return res.status(422).json({ error: error.details[0].message });
+    }
+
+    const staffCheck = meterUpdateStaffCheck(meterStatus, req.staff.role);
+    if (!staffCheck) {
+      return res
+        .status(422)
+        .json({ error: `You do not have the permissions to perform this operation as a ${req.staff.role}` });
+    }
+
+    const meter = await Meter.findOne({ meterNumber });
+    if (meter) {
+      return res.status(422).json({ error: `this meter as already been scanned as a new meter` });
+    } else {
+      const newMeter = new Meter({
+        meterNumber,
+        barcode,
+        meterStatus,
+        typeOfMeter,
+        vendor: req.staff.vendor,
+        address,
+        createdBy: req.staff._id
+      });
+      await newMeter.save();
+      const vendor = await Vendor.findOne({ vendor: req.staff.vendor });
+      await generateMeterHistory(newMeter, req.staff, vendor, address);
+
+      return res.status(201).json({
+        status: 'success',
+        message: 'Meter created successfully',
+        data: newMeter
+      });
+    }
   } catch (error) {
     Logger.error(error);
     return res.status(500).json({ message: 'Internal server error' });
