@@ -1,6 +1,7 @@
 import mongoose, { Model, Schema } from 'mongoose';
 
 import { HistoryDoc } from '../../types/history.js';
+import { addressSchema } from '../CustomerModel/CustomerModel.js';
 import {
   BaseModelMethods,
   findActive,
@@ -36,6 +37,10 @@ const historySchema = new mongoose.Schema<HistoryDocumentResult, HistoryModel>(
     },
     action: {
       type: String
+    },
+    address: {
+      type: addressSchema,
+      required: true
     }
   },
   {

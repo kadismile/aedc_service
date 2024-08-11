@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 
+import { AddressDoc } from './customer.js';
 import { AdvancedQueryResult } from './queryresults.js';
 
 export type HistoryDoc = {
@@ -8,6 +9,7 @@ export type HistoryDoc = {
   entityId: Types.ObjectId;
   customer: Types.ObjectId;
   entity: string;
+  address: AddressDoc;
   action: string;
   createdAt: Date;
   updatedAt: Date;

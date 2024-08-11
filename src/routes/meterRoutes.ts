@@ -7,6 +7,7 @@ import {
   getMeter,
   getMeterByVendor,
   getMeters,
+  mapScan,
   updateMeter
 } from '../controllers/meter_controller.js';
 import { upload } from '../helpers/file_upload.js';
@@ -21,5 +22,6 @@ router.get('/barcode/:barcode', authorize, getByBarcode);
 router.get('/vendor/count', authorize, getMeterByVendor);
 router.put('/update-meter/:id', authorize, upload.single('fileUpload'), updateMeter);
 router.post('/assign/', authorize, assignMeterToStaff);
+router.post('/map/scan', authorize, mapScan);
 
 export default router;

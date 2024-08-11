@@ -11,7 +11,7 @@ export enum METER_TYPE {
 }
 
 export enum METER_STATUS {
-  ACTIVATED = 'activated',
+  NEWMETER = 'new_meter', //
   INSTALLED = 'installed',
   ASSIGNED = 'assigned',
   COMMISIONED = 'commisioned'
