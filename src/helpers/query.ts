@@ -11,6 +11,7 @@ type AdvancedResult<T> = { [P in keyof T]?: Condition<T[P]> } & {
   sort: string;
   page: string;
   totalCount: number;
+  state: string;
 };
 
 const QUERY_SELECTORS = ['gt', 'gte', 'lt', 'lte', 'eq'];
@@ -32,6 +33,9 @@ export const advancedResults = async <K, T extends Document>(
           acc.createdAt[`$${key}`] = new Date(value);
         }
       } else {
+        if (key === 'state') {
+          acc['address.state'] = value;
+        }
         acc[key] = value;
         if (BOOLEAN_FIELDS.includes(key)) {
           acc[key] = stringToBoolean(Array.isArray(value) ? value[0] : value);
@@ -40,6 +44,7 @@ export const advancedResults = async <K, T extends Document>(
       return acc;
     }, {} as AdvancedResult<K>);
 
+    delete transformedQuery.state;
     if (!!query.limit || !!query.sort || !!query.page) {
       delete transformedQuery.limit;
       delete transformedQuery.sort;
