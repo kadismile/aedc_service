@@ -191,35 +191,45 @@ export const getMeterByVendor = async (req: Request, res: Response) => {
 
 export const assignMeterToStaff = async (req: Request, res: Response) => {
   const body = req.body as { staffId: string; meterId: string };
-  const { staffId, meterId } = body;
-  try {
-    if (!staffId || !meterId) {
-      return res.status(422).json({ error: 'both staffId & meterId is required' });
-    }
+  const staff = req.staff;
 
-    const meter = await Meter.findOne({ _id: meterId, meterStatus: METER_STATUS.ASSIGNED });
-    if (!meter) {
-      return res.status(404).json({ message: 'meter not found' });
-    }
+  if (staff.role == STAFF_ROLE.MAP) {
+    const { staffId, meterId } = body;
+    try {
+      if (!staffId || !meterId) {
+        return res.status(422).json({ error: 'both staffId & meterId is required' });
+      }
 
-    const staff = await Staff.findOne({ _id: staffId, role: STAFF_ROLE.INSTALLER });
-    if (!staff) {
-      return res.status(404).json({ message: 'staff not found' });
-    }
-    const assignment = new Assignemnt({
-      staff: staffId,
-      meter: meterId,
-      createdBy: req.staff._id
-    });
-    await assignment.save();
+      const meter = await Meter.findOne({ _id: meterId, meterStatus: METER_STATUS.ASSIGNED }); // this meter would have been assigned to a customer
+      if (!meter) {
+        return res.status(404).json({ message: 'meter not found' });
+      }
 
-    return res.status(200).json({
-      status: 'success',
-      message: `meter successfully assigned to ${staff.fullName}`
-    });
-  } catch (error) {
-    Logger.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+      if (req.staff.vendor !== meter.vendor) {
+        return res.status(404).json({ message: 'you can only assign meters within your vendor' });
+      }
+
+      const staff = await Staff.findOne({ _id: staffId, role: STAFF_ROLE.INSTALLER });
+      if (!staff) {
+        return res.status(404).json({ message: 'staff not found' });
+      }
+      const assignment = new Assignemnt({
+        staff: staffId,
+        meter: meterId,
+        createdBy: req.staff._id
+      });
+      await assignment.save();
+
+      return res.status(200).json({
+        status: 'success',
+        message: `meter successfully assigned to ${staff.fullName}`
+      });
+    } catch (error) {
+      Logger.error(error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  } else {
+    return res.status(422).json({ error: 'you must be a meter access provider to perfoem this operation' });
   }
 };
 
