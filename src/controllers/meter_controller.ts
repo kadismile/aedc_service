@@ -69,8 +69,12 @@ export const updateMeter = async (req: Request, res: Response) => {
         await manageFileUpload(path, filename, updateMeter, 'meters');
       }
 
-      const vendor = await Vendor.findOne({ vendor: req.staff.vendor });
-      await generateMeterHistory(updateMeter, req.staff, vendor, address);
+      const vendor = await Vendor.findOne({ _id: req.staff.vendor });
+      if (vendor?._id.equals(req.staff.vendor)) {
+        await generateMeterHistory(updateMeter, req.staff, vendor, address);
+      } else {
+        return res.status(422).json({ error: 'you cannot update meter for another vendor' });
+      }
 
       return res.status(200).json({
         status: 'success'
