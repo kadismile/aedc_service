@@ -92,10 +92,18 @@ export const getMeter = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const meter = await Meter.findById(id)
-      .populate('meterHistory', 'action staff customer -_id')
+      .populate({
+        path: 'meterHistory',
+        select: 'action staff customer address -_id',
+        populate: {
+          path: 'staff',
+          select: 'fullName phoneNumber -_id'
+        }
+      })
       .populate('customer', 'address name -_id')
       .populate('vendor', 'address name -_id')
       .populate('attachments', 'secure_url -_id');
+
     if (!meter) {
       return res.status(404).json({
         status: 'failed',
@@ -118,7 +126,15 @@ export const getMeters = async (req: Request, res: Response) => {
     await Meter.populate(meters.results, { path: 'customer', select: 'name address -_id' });
     await Meter.populate(meters.results, { path: 'vendor', select: 'name -_id' });
     await Meter.populate(meters.results, { path: 'attachments', select: 'secure_url -_id' });
-    await Meter.populate(meters.results, { path: 'meterHistory', select: 'action createdAt -_id' });
+    await Meter.populate(meters.results, {
+      path: 'meterHistory',
+      select: 'action staff customer address -_id',
+      populate: {
+        path: 'staff',
+        select: 'fullName phoneNumber -_id'
+      }
+    });
+
     return res.status(200).json({
       status: 'success',
       data: meters
@@ -133,7 +149,14 @@ export const getByBarcode = async (req: Request, res: Response) => {
   const { barcode } = req.params;
   try {
     const meter = await Meter.findOne<MeterDocumentResult>({ barcode: barcode })
-      .populate('meterHistory', 'action staff -_id')
+      .populate({
+        path: 'meterHistory',
+        select: 'action staff customer address -_id',
+        populate: {
+          path: 'staff',
+          select: 'fullName phoneNumber -_id'
+        }
+      })
       .populate('customer', 'address name -_id')
       .populate('vendor', 'address name -_id')
       .populate('attachments', 'secure_url -_id');
