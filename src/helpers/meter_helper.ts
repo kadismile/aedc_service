@@ -56,8 +56,8 @@ export const generateMeterHistory = async (
       return;
     }
 
-    if (meter.meterStatus === METER_STATUS.ASSIGNED && staffInstaller) {
-      const action = `A new meter as just been assigned for installation to a staff ${staffInstaller.fullName}`;
+    if (staffInstaller) {
+      const action = `A new meter as just been assigned for installation to ${staffInstaller.fullName}`;
       await createHistoryAndUpdateMeter(action);
       return;
     }
