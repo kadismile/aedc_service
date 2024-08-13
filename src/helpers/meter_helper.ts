@@ -21,13 +21,12 @@ export const generateMeterHistory = async (
         staff: staff._id,
         entityId: meter._id,
         entity: 'meter',
-        customer,
+        customer: customer._id,
         action,
         address
       });
       await history.save();
-
-      await Meter.findByIdAndUpdate({ _id: meter._id }, { $push: { meterHistory: history._id } });
+      await Meter.findOneAndUpdate({ _id: meter.id }, { $push: { meterHistory: history._id } });
       return;
     };
 
