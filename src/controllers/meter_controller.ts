@@ -249,9 +249,8 @@ export const assignMeterToStaff = async (req: Request, res: Response) => {
       await assignment.save();
 
       const vendor = await Vendor.findOne({ _id: req.staff.vendor });
-      const staffInstaller = await Staff.findOne({ _id: staffId });
       if (vendor?._id.equals(req.staff.vendor)) {
-        await generateMeterHistory(meter, req.staff, vendor, address, staffInstaller);
+        await generateMeterHistory(meter, req.staff, vendor, address, staff);
       } else {
         return res.status(422).json({ error: 'you cannot update meter for another vendor' });
       }
