@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 
-import { createMeterApiValidator, updateMeterApiValidator } from '../api_validators/meter-api-validators.js';
+import {
+  assignMeterApiValidator,
+  createMeterApiValidator,
+  updateMeterApiValidator
+} from '../api_validators/meter-api-validators.js';
 import { manageFileUpload } from '../helpers/file_upload.js';
 import { generateMeterHistory, meterUpdateStaffCheck } from '../helpers/meter_helper.js';
 import { advancedResults } from '../helpers/query.js';
@@ -224,13 +228,19 @@ export const assignMeterToStaff = async (req: Request, res: Response) => {
   if (staff.role == STAFF_ROLE.MAP) {
     const { staffId, meterId, address } = body;
     try {
-      if (!staffId || !meterId) {
-        return res.status(422).json({ error: 'both staffId & meterId is required' });
+      const { error } = assignMeterApiValidator.validate(req.body);
+      if (error) {
+        return res.status(422).json({ error: error.details[0].message });
       }
 
       const meter = await Meter.findOne({ _id: meterId, meterStatus: METER_STATUS.ASSIGNED }); // this meter would have been assigned to a customer
       if (!meter) {
         return res.status(404).json({ message: 'meter not found' });
+      }
+
+      const assigned = await Assignemnt.findOne({ meter: meterId, staff: staffId });
+      if (assigned) {
+        return res.status(422).json({ error: 'meter has already been assigned to this installer' });
       }
 
       /* if (!req.staff.vendor.equals(meter.vendor)) {
@@ -249,11 +259,7 @@ export const assignMeterToStaff = async (req: Request, res: Response) => {
       await assignment.save();
 
       const vendor = await Vendor.findOne({ _id: req.staff.vendor });
-      if (vendor?._id.equals(req.staff.vendor)) {
-        await generateMeterHistory(meter, req.staff, vendor, address, staff);
-      } else {
-        return res.status(422).json({ error: 'you cannot update meter for another vendor' });
-      }
+      await generateMeterHistory(meter, req.staff, vendor, address, staff);
 
       return res.status(200).json({
         status: 'success',

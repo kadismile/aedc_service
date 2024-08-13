@@ -31,7 +31,7 @@ export const generateMeterHistory = async (
       return;
     };
 
-    if (meter.meterStatus === METER_STATUS.ASSIGNED) {
+    if (meter.meterStatus === METER_STATUS.ASSIGNED && !staffInstaller) {
       const action = `A new meter as just been assigned to ${customer.name}`;
       await createHistoryAndUpdateMeter(action);
       //  TODO: send SMS here to customer and mail too telling them about there new meter coming
