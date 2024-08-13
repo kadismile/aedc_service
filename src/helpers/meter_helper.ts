@@ -10,7 +10,8 @@ export const generateMeterHistory = async (
   meter: MeterDoc,
   staff: StaffDoc,
   vendor: VendorDoc,
-  address: AddressDoc
+  address: AddressDoc,
+  staffInstaller: StaffDoc
 ) => {
   try {
     const customer = await Customer.findOne({ _id: meter.customer });
@@ -51,6 +52,12 @@ export const generateMeterHistory = async (
 
     if (meter.meterStatus === METER_STATUS.NEWMETER) {
       const action = `a new meter as just been captured by ${staff.fullName}`;
+      await createHistoryAndUpdateMeter(action);
+      return;
+    }
+
+    if (meter.meterStatus === METER_STATUS.ASSIGNED && staffInstaller) {
+      const action = `A new meter as just been assigned for installation to a staff ${staffInstaller.fullName}`;
       await createHistoryAndUpdateMeter(action);
       return;
     }
