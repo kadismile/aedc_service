@@ -232,9 +232,9 @@ export const assignMeterToStaff = async (req: Request, res: Response) => {
         return res.status(404).json({ message: 'meter not found' });
       }
 
-      if (!req.staff.vendor.equals(meter.vendor)) {
+      /* if (!req.staff.vendor.equals(meter.vendor)) {
         return res.status(404).json({ message: 'you can only assign meters within your vendor' });
-      }
+      } */
 
       const staff = await Staff.findOne({ _id: staffId, role: STAFF_ROLE.INSTALLER });
       if (!staff) {
