@@ -10,6 +10,7 @@ import Assignemnt from '../models/AssignmentModel/AssigmentModel.js';
 import Meter, { MeterDocumentResult } from '../models/MeterModel/MeterModel.js';
 import Staff from '../models/StaffModel/StaffModel.js';
 import Vendor from '../models/VendorModel/VendorModel.js';
+import { AddressDoc } from '../types/customer.js';
 import { METER_STATUS, MeterDoc, RegisterMeterRequestBody } from '../types/meter.js';
 import { STAFF_ROLE } from '../types/staff.js';
 import { validateMeterStatus } from './../helpers/meter_helper.js';
@@ -71,7 +72,7 @@ export const updateMeter = async (req: Request, res: Response) => {
 
       const vendor = await Vendor.findOne({ _id: req.staff.vendor });
       if (vendor?._id.equals(req.staff.vendor)) {
-        await generateMeterHistory(updateMeter, req.staff, vendor, address);
+        await generateMeterHistory(updateMeter, req.staff, vendor, address, undefined);
       } else {
         return res.status(422).json({ error: 'you cannot update meter for another vendor' });
       }
@@ -217,11 +218,11 @@ export const getMeterByVendor = async (req: Request, res: Response) => {
 };
 
 export const assignMeterToStaff = async (req: Request, res: Response) => {
-  const body = req.body as { staffId: string; meterId: string };
+  const body = req.body as { staffId: string; meterId: string; address: AddressDoc };
   const staff = req.staff;
 
   if (staff.role == STAFF_ROLE.MAP) {
-    const { staffId, meterId } = body;
+    const { staffId, meterId, address } = body;
     try {
       if (!staffId || !meterId) {
         return res.status(422).json({ error: 'both staffId & meterId is required' });
@@ -232,9 +233,9 @@ export const assignMeterToStaff = async (req: Request, res: Response) => {
         return res.status(404).json({ message: 'meter not found' });
       }
 
-      if (!req.staff.vendor.equals(meter.vendor)) {
+      /* if (!req.staff.vendor.equals(meter.vendor)) {
         return res.status(404).json({ message: 'you can only assign meters within your vendor' });
-      }
+      } */
 
       const staff = await Staff.findOne({ _id: staffId, role: STAFF_ROLE.INSTALLER });
       if (!staff) {
@@ -246,6 +247,14 @@ export const assignMeterToStaff = async (req: Request, res: Response) => {
         createdBy: req.staff._id
       });
       await assignment.save();
+
+      const vendor = await Vendor.findOne({ _id: req.staff.vendor });
+      const staffInstaller = await Staff.findOne({ _id: staffId });
+      if (vendor?._id.equals(req.staff.vendor)) {
+        await generateMeterHistory(meter, req.staff, vendor, address, staffInstaller);
+      } else {
+        return res.status(422).json({ error: 'you cannot update meter for another vendor' });
+      }
 
       return res.status(200).json({
         status: 'success',
@@ -291,7 +300,7 @@ export const mapScan = async (req: Request, res: Response) => {
       });
       await newMeter.save();
       const vendor = await Vendor.findOne({ vendor: req.staff.vendor });
-      await generateMeterHistory(newMeter, req.staff, vendor, address);
+      await generateMeterHistory(newMeter, req.staff, vendor, address, undefined);
 
       return res.status(201).json({
         status: 'success',
