@@ -260,8 +260,14 @@ export const assignMeterToStaff = async (req: Request, res: Response) => {
       });
       await assignment.save();
 
+      const updatedMeter = await Meter.findByIdAndUpdate(
+        { _id: meter._id },
+        { address, staff: staffId },
+        { new: true }
+      );
+
       const vendor = await Vendor.findOne({ _id: req.staff.vendor });
-      await generateMeterHistory(meter, req.staff, vendor, address, staff);
+      await generateMeterHistory(updatedMeter, req.staff, vendor, address, staff);
 
       return res.status(200).json({
         status: 'success',
