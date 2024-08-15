@@ -1,10 +1,9 @@
 import { faker } from '@faker-js/faker';
-import { ObjectId } from 'mongodb';
-import { Types } from 'mongoose';
 
 import {
   generateRandomNumber,
   getAdminStaff,
+  getMAPStaff,
   getRandomAEDCstate,
   getRandomCoordinate,
   getRandomMeterType,
@@ -13,14 +12,10 @@ import {
 import Logger from '../libs/logger.js';
 import { METER_STATUS } from '../types/meter.js';
 import Customer from './CustomerModel/CustomerModel.js';
+import History from './HistoryModel/HistoryModel.js';
 import Meter from './MeterModel/MeterModel.js';
 import Staff from './StaffModel/StaffModel.js';
 import Vendor from './VendorModel/VendorModel.js';
-
-type MapCustomerDoc = {
-  _id: Types.ObjectId;
-  number: number;
-};
 
 const staffSeedData = [
   {
@@ -28,7 +23,6 @@ const staffSeedData = [
     email: process.env.DEFAULT_APP_EMAIL,
     password: process.env.DEFAULT_APP_PASSWORD,
     phoneNumber: '07067775027',
-    nickName: 'kadi',
     fullName: 'kadismile Ibrahim',
     role: 'admin',
     createdBy: '66056a0b8cddbeac52b7221f'
@@ -38,7 +32,6 @@ const staffSeedData = [
     email: 'blonde@gmail.com',
     password: process.env.DEFAULT_APP_PASSWORD,
     phoneNumber: '07066665027',
-    nickName: 'blond',
     fullName: 'blonde Chilaka',
     role: 'installer',
     createdBy: '66056a0b8cddbeac52b7221f'
@@ -49,7 +42,6 @@ const staffSeedData = [
     email: 'cleopatra@gmail.com',
     password: process.env.DEFAULT_APP_PASSWORD,
     phoneNumber: '07064555027',
-    nickName: 'Cleopatra',
     fullName: 'Cleopatra Odemwingie',
     role: 'installer',
     createdBy: '66056a0b8cddbeac52b7221f'
@@ -60,7 +52,6 @@ const staffSeedData = [
     email: 'philip@gmail.com',
     password: process.env.DEFAULT_APP_PASSWORD,
     phoneNumber: '07064234027',
-    nickName: 'Philip',
     fullName: 'Philip  Anka',
     role: 'installer',
     createdBy: '66056a0b8cddbeac52b7221f'
@@ -71,7 +62,6 @@ const staffSeedData = [
     email: 'nehemiah@gmail.com',
     password: process.env.DEFAULT_APP_PASSWORD,
     phoneNumber: '07064111059',
-    nickName: 'Nehi',
     fullName: 'Nehimiah  Puininin',
     role: 'installer',
     createdBy: '66056a0b8cddbeac52b7221f'
@@ -81,7 +71,6 @@ const staffSeedData = [
     email: 'abdul@gmaill.com',
     password: process.env.DEFAULT_APP_PASSWORD,
     phoneNumber: '07064454059',
-    nickName: 'Abdul',
     fullName: 'Abdul  Ibrahim',
     role: 'installer',
     createdBy: '66056a0b8cddbeac52b7221f'
@@ -91,7 +80,6 @@ const staffSeedData = [
     email: 'william@gmaill.com',
     password: process.env.DEFAULT_APP_PASSWORD,
     phoneNumber: '07064239058',
-    nickName: 'William',
     fullName: 'William Goodwill',
     role: 'aedc_staff',
     createdBy: '66056a0b8cddbeac52b7221f'
@@ -102,7 +90,6 @@ const staffSeedData = [
     email: 'ikadismile@gmaill.com',
     password: process.env.DEFAULT_APP_PASSWORD,
     phoneNumber: '07064239214',
-    nickName: 'Onogie',
     fullName: 'Onogie Ibrahim',
     vendor: '66a8d7f078390e69e094e58d',
     role: 'meter_access_provider',
@@ -163,19 +150,25 @@ const vendorSeedData = [
   }
 ];
 
-const createMeterData = async (customerId: ObjectId) => {
+const createMeterData = async () => {
   const vendor = await getRandomVendorId();
   const createdBy = await getAdminStaff();
   const updatedBy = await getAdminStaff();
-
+  const state = getRandomAEDCstate();
   const meterData = [
     {
       meterNumber: generateRandomNumber(11),
       barcode: generateRandomNumber(15),
       typeOfMeter: getRandomMeterType(),
-      customer: customerId,
-      meterStatus: METER_STATUS.ASSIGNED,
+      meterStatus: METER_STATUS.NEWMETER,
       vendor,
+      address: {
+        fullAddress: faker.location.secondaryAddress(),
+        state,
+        longitude: getRandomCoordinate(state).longitude,
+        latitude: getRandomCoordinate(state).latitude
+      },
+      history: [{}],
       createdBy,
       updatedBy
     }
@@ -231,18 +224,27 @@ export const seedDBdata = async () => {
     }
 
     if (meterCount < 1) {
-      const customers = await Customer.find().limit(1500);
-      const customerMap = customers.map((customer, index): MapCustomerDoc => {
-        return {
-          _id: customer._id,
-          number: index
-        };
-      });
-
-      for (let i = 1; i <= 1000; i++) {
-        const customerToUpdate = customerMap.find(cus => i == cus.number);
-        const meter = await Meter.create(await createMeterData(customerToUpdate._id));
-        await Customer.findByIdAndUpdate({ _id: customerToUpdate._id }, { meterNumber: meter[0].meterNumber });
+      for (let i = 1; i <= 50; i++) {
+        const myMeterData = await createMeterData();
+        const meter = new Meter(myMeterData[0]);
+        await meter.save();
+        const staff = await getMAPStaff();
+        const state = getRandomAEDCstate();
+        const action = `a new meter as just been captured by ${staff.fullName}`;
+        const history = new History({
+          staff: staff._id,
+          entityId: meter._id,
+          entity: 'meter',
+          action,
+          address: {
+            fullAddress: faker.location.secondaryAddress(),
+            state,
+            longitude: getRandomCoordinate(state).longitude,
+            latitude: getRandomCoordinate(state).latitude
+          }
+        });
+        await history.save();
+        await Meter.findOneAndUpdate({ _id: meter.id }, { $push: { meterHistory: history._id } });
         Logger.info('Meter Data Seeded Succesfully ....');
       }
     }

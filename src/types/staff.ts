@@ -21,7 +21,6 @@ export type StaffDoc = {
   id: string;
   email: string;
   password: string;
-  nickName: string;
   fullName: string;
   phoneNumber: string;
   role: STAFF_ROLE;

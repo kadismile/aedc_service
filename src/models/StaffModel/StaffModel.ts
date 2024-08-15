@@ -35,11 +35,6 @@ const staffSchema = new mongoose.Schema<StaffDocumentResult, StaffModel>(
       type: String,
       required: true
     },
-    nickName: {
-      type: String,
-      unique: true,
-      required: true
-    },
     phoneNumber: {
       type: String,
       required: true,

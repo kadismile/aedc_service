@@ -7,7 +7,7 @@ import {
   staffLoginApiValidator
 } from '../api_validators/staff-api-validators.js';
 import { advancedResults } from '../helpers/query.js';
-import { passwordGenerator, sanitizeReturnedStaff } from '../helpers/staff_helper.js';
+import { sanitizeReturnedStaff } from '../helpers/staff_helper.js';
 import Logger from '../libs/logger.js';
 import History from '../models/HistoryModel/HistoryModel.js';
 import Staff, { StaffDocumentResult } from '../models/StaffModel/StaffModel.js';
@@ -17,9 +17,8 @@ import { RegisterStaffRequestBody, StaffDoc } from '../types/staff.js';
 
 export const createStaff = async (req: Request, res: Response) => {
   const body = req.body as RegisterStaffRequestBody;
-  const { email, vendor, phoneNumber, nickName, fullName, role, staffRegion } = body;
+  const { email, vendor, phoneNumber, fullName, password, role, staffRegion } = body;
   const createdBy = req.staff._id;
-  const password = passwordGenerator();
   try {
     const { error } = createStaffApiValidator.validate(req.body);
     if (error) {
@@ -28,17 +27,15 @@ export const createStaff = async (req: Request, res: Response) => {
     const newStaff = new Staff({
       email,
       vendor,
-      password,
       phoneNumber,
-      nickName,
       fullName,
+      password,
       role,
       createdBy,
       staffRegion,
       permissions: []
     });
     await newStaff.save();
-    newStaff.password = password;
     return res.status(201).json({
       status: 'success',
       message: 'Staff registered successfully',
