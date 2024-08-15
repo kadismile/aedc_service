@@ -57,6 +57,16 @@ export const getAdminStaff = async () => {
   return staff._id;
 };
 
+export const getMAPStaff = async () => {
+  const staffList = await Staff.find({ role: STAFF_ROLE.MAP });
+  if (staffList.length === 0) {
+    throw new Error('No staff found with the role MAP');
+  }
+  const randomIndex = Math.floor(Math.random() * staffList.length);
+  const randomStaff = staffList[randomIndex];
+  return randomStaff;
+};
+
 export const getRandomMeterId = async () => {
   const meters = await Meter.find({});
   const randomIndex = Math.floor(Math.random() * meters.length);

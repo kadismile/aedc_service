@@ -3,6 +3,7 @@ import { Document } from 'mongoose';
 
 import {
   assignMeterApiValidator,
+  assignMeterToCustomerApiValidator,
   createMeterApiValidator,
   updateMeterApiValidator
 } from '../api_validators/meter-api-validators.js';
@@ -11,6 +12,7 @@ import { generateMeterHistory, meterUpdateStaffCheck } from '../helpers/meter_he
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
 import Assignemnt from '../models/AssignmentModel/AssigmentModel.js';
+import Customer from '../models/CustomerModel/CustomerModel.js';
 import Meter, { MeterDocumentResult } from '../models/MeterModel/MeterModel.js';
 import Staff from '../models/StaffModel/StaffModel.js';
 import Vendor from '../models/VendorModel/VendorModel.js';
@@ -316,5 +318,50 @@ export const mapScan = async (req: Request, res: Response) => {
   } catch (error) {
     Logger.error(error);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const assignMeterToCustomer = async (req: Request, res: Response) => {
+  const body = req.body as { customerId: string; meterId: string; address: AddressDoc };
+  const staff = req.staff;
+
+  if (staff.role == STAFF_ROLE.AEDC_STAFF) {
+    const { customerId, meterId, address } = body;
+    try {
+      const { error } = assignMeterToCustomerApiValidator.validate(req.body);
+      if (error) {
+        return res.status(422).json({ error: error.details[0].message });
+      }
+
+      const meter = await Meter.findOne({ _id: meterId, meterStatus: METER_STATUS.NEWMETER }); // this meter must be a new meter
+      if (!meter) {
+        return res.status(404).json({ message: 'meter not found' });
+      }
+
+      const customer = await Customer.findOne({ _id: customerId });
+      if (!customer) {
+        return res.status(404).json({ message: 'customer not found' });
+      }
+
+      const updateMeter = await Meter.findByIdAndUpdate(
+        { _id: meter._id },
+        { meterStatus: METER_STATUS.ASSIGNED, address, customer: customer._id },
+        { new: true }
+      );
+
+      const vendor = await Vendor.findOne({ _id: req.staff.vendor });
+      // the address here is the aedc address
+      await generateMeterHistory(updateMeter, req.staff, vendor, address, undefined, customer);
+
+      return res.status(200).json({
+        status: 'success',
+        message: `meter successfully assigned to ${customer.name}`
+      });
+    } catch (error) {
+      Logger.error(error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  } else {
+    return res.status(422).json({ error: 'you must be an aedc staff to perfoem this operation' });
   }
 };

@@ -33,7 +33,6 @@ export const createVendor = async (req: Request, res: Response) => {
   }
 };
 
-// get all vendor
 export const getVendors = async (req: Request, res: Response) => {
   try {
     const vendors = await advancedResults<VendorDoc, VendorDocumentResult & Document>(req.url, Vendor);
@@ -47,7 +46,6 @@ export const getVendors = async (req: Request, res: Response) => {
   }
 };
 
-// Get single vendor by ID
 export const getVendor = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
@@ -69,7 +67,6 @@ export const getVendor = async (req: Request, res: Response) => {
   }
 };
 
-// Update vendor
 export const updateVendor = async (req: Request, res: Response) => {
   const body = req.body as RegisterVendorRequestBody;
   const { name, address, phoneNumber } = body;

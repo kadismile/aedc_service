@@ -1,7 +1,8 @@
+import Logger from '../libs/logger.js';
 import Customer from '../models/CustomerModel/CustomerModel.js';
 import History from '../models/HistoryModel/HistoryModel.js';
 import Meter from '../models/MeterModel/MeterModel.js';
-import { AddressDoc } from '../types/customer.js';
+import { AddressDoc, CustomerDoc } from '../types/customer.js';
 import { METER_STATUS, MeterDoc } from '../types/meter.js';
 import { VendorDoc } from '../types/vendor.js';
 import { STAFF_ROLE, StaffDoc } from './../types/staff.js';
@@ -11,27 +12,32 @@ export const generateMeterHistory = async (
   staff: StaffDoc,
   vendor: VendorDoc,
   address: AddressDoc,
-  staffInstaller: StaffDoc
+  staffInstaller: StaffDoc,
+  meterCustomer?: CustomerDoc
 ) => {
   try {
     const customer = await Customer.findOne({ _id: meter.customer });
 
     const createHistoryAndUpdateMeter = async (action: string) => {
-      const history = new History({
-        staff: staff._id,
-        entityId: meter._id,
-        entity: 'meter',
-        customer: customer._id,
-        action,
-        address
-      });
-      await history.save();
-      await Meter.findOneAndUpdate({ _id: meter.id }, { $push: { meterHistory: history._id } });
-      return;
+      try {
+        const history = new History({
+          staff: staff._id,
+          entityId: meter._id,
+          entity: 'meter',
+          customer: customer._id,
+          action,
+          address
+        });
+        await history.save();
+        await Meter.findOneAndUpdate({ _id: meter.id }, { $push: { meterHistory: history._id } });
+        return;
+      } catch (error) {
+        Logger.info(error);
+      }
     };
 
     if (meter.meterStatus === METER_STATUS.ASSIGNED && !staffInstaller) {
-      const action = `A new meter as just been assigned to ${customer.name}`;
+      const action = `A new meter as just been assigned to ${meterCustomer.name}`;
       await createHistoryAndUpdateMeter(action);
       //  TODO: send SMS here to customer and mail too telling them about there new meter coming
       return;

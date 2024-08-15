@@ -58,10 +58,6 @@ const meterSchema = new mongoose.Schema<MeterDocumentResult, MeterModel>(
       ref: 'Vendor',
       required: [true, 'Please Add Vendor']
     },
-    staff: {
-      type: Schema.Types.ObjectId,
-      ref: 'Staff'
-    },
     attachments: [
       {
         type: Schema.Types.ObjectId,

@@ -1,6 +1,7 @@
 import express from 'express';
 
 import {
+  assignMeterToCustomer,
   assignMeterToStaff,
   createMeter,
   getByBarcode,
@@ -21,7 +22,8 @@ router.get('/:id', authorize, getMeter);
 router.get('/barcode/:barcode', authorize, getByBarcode);
 router.get('/vendor/count', authorize, getMeterByVendor);
 router.put('/update-meter/:id', authorize, upload.single('fileUpload'), updateMeter);
-router.post('/assign/', authorize, assignMeterToStaff);
-router.post('/map/scan', authorize, mapScan);
+router.post('/assign/', authorize, upload.single('fileUpload'), assignMeterToStaff);
+router.post('/map/scan', authorize, upload.single('fileUpload'), mapScan);
+router.post('/customer/assign', authorize, upload.single('fileUpload'), assignMeterToCustomer);
 
 export default router;
