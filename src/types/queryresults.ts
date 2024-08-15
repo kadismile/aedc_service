@@ -6,4 +6,5 @@ export type AdvancedQueryResult<T> = {
   prevPage: number;
   nextPage: number;
   totalCount: number;
+  filterdDocumentsCount: number;
 };

@@ -11,6 +11,7 @@ type AdvancedResult<T> = { [P in keyof T]?: Condition<T[P]> } & {
   sort: string;
   page: string;
   totalCount: number;
+  filterdDocumentsCount: number;
   state: string;
 };
 
@@ -67,6 +68,7 @@ export const advancedResults = async <K, T extends Document>(
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
     const total = await model.countDocuments({});
+    const filterdDocumentsCount = await model.countDocuments(transformedQuery);
 
     const results = await model.find<T>(transformedQuery).sort(sortOptions).limit(limit).skip(startIndex);
     const pagination: { prev?: { page: number }; next?: { page: number } } = {};
@@ -86,6 +88,7 @@ export const advancedResults = async <K, T extends Document>(
       results,
       count: results.length,
       totalCount: total,
+      filterdDocumentsCount,
       page: page,
       limit: limit,
       prevPage: pagination.prev?.page || null,

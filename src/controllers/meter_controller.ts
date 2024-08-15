@@ -69,13 +69,13 @@ export const updateMeter = async (req: Request, res: Response) => {
         const message = validateMeterStatus(meter, meterStatus);
         return res.status(422).json({ error: message });
       }
-      const updateMeter = await Meter.findByIdAndUpdate({ _id: id }, { meterStatus, address }, { new: true });
 
       if (req?.file) {
         const { path, filename } = req.file;
-        await manageFileUpload(path, filename, updateMeter, 'meters');
+        await manageFileUpload(path, filename, meter, 'meters');
       }
 
+      const updateMeter = await Meter.findByIdAndUpdate({ _id: id }, { meterStatus, address }, { new: true });
       const vendor = await Vendor.findOne({ _id: req.staff.vendor });
       if (vendor?._id.equals(req.staff.vendor)) {
         await generateMeterHistory(updateMeter, req.staff, vendor, address, undefined);
@@ -249,6 +249,11 @@ export const assignMeterToStaff = async (req: Request, res: Response) => {
         return res.status(404).json({ message: 'you can only assign meters within your vendor' });
       } */
 
+      if (req?.file) {
+        const { path, filename } = req.file;
+        await manageFileUpload(path, filename, meter, 'meters');
+      }
+
       const staff = await Staff.findOne({ _id: staffId, role: STAFF_ROLE.INSTALLER });
       if (!staff) {
         return res.status(404).json({ message: 'staff not found' });
@@ -312,6 +317,12 @@ export const mapScan = async (req: Request, res: Response) => {
         createdBy: req.staff._id
       });
       await newMeter.save();
+
+      if (req?.file) {
+        const { path, filename } = req.file;
+        await manageFileUpload(path, filename, newMeter, 'meters');
+      }
+
       const vendor = await Vendor.findOne({ vendor: req.staff.vendor });
       await generateMeterHistory(newMeter, req.staff, vendor, address, undefined);
 
