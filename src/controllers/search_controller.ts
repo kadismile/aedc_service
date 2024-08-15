@@ -49,13 +49,6 @@ export const search = async (req: Request, res: Response) => {
         });
     }
 
-    if (results?.length === 0) {
-      return res.status(404).json({
-        status: 'failed',
-        message: `No results found for model: ${model} with searchText: ${searchText}`
-      });
-    }
-
     return res.status(200).json({
       status: 'success',
       data: results
