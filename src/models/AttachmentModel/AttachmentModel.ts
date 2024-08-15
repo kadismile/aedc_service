@@ -19,6 +19,10 @@ type AttachmentModel = BaseModelMethods<AttachmentDocumentResult> & Model<Attach
 
 const attachmentSchema = new mongoose.Schema<AttachmentDocumentResult, AttachmentModel>(
   {
+    action: {
+      type: String,
+      required: true
+    },
     asset_id: {
       type: String,
       required: true

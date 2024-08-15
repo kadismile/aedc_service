@@ -99,6 +99,7 @@ const uploadToCloudinary = async job => {
 
     const attachment = new Attachment({
       asset_id,
+      action: data.meterStatus,
       public_id,
       signature,
       format,
