@@ -4,6 +4,7 @@ import { AdvancedQueryResult } from './queryresults.js';
 
 export type AttachmentDoc = {
   _id: Types.ObjectId;
+  action: string;
   asset_id: string;
   public_id: string;
   signature: string;
