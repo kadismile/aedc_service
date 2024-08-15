@@ -130,7 +130,7 @@ export const getMeter = async (req: Request, res: Response) => {
 export const getMeters = async (req: Request, res: Response) => {
   try {
     const meters = await advancedResults<MeterDoc, MeterDocumentResult & Document>(req.url, Meter);
-    await Meter.populate(meters.results, { path: 'customer', select: 'name address -_id' });
+    await Meter.populate(meters.results, { path: 'customer', select: 'name address phoneNumber -_id' });
     await Meter.populate(meters.results, { path: 'vendor', select: 'name -_id' });
     await Meter.populate(meters.results, { path: 'attachments', select: 'secure_url -_id' });
     await Meter.populate(meters.results, {
