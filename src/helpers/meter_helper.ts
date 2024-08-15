@@ -37,37 +37,37 @@ export const generateMeterHistory = async (
     };
 
     if (meter.meterStatus === METER_STATUS.ASSIGNED && !staffInstaller) {
-      const action = `A new meter as just been assigned to ${meterCustomer.name}`;
+      const action = `A new meter has just been assigned to ${meterCustomer.name}`;
       await createHistoryAndUpdateMeter(action);
       //  TODO: send SMS here to customer and mail too telling them about there new meter coming
       return;
     }
 
     if (meter.meterStatus === METER_STATUS.INSTALLED) {
-      const action = `A new meter as just been installed in ${customer.address.fullAddress} by ${staff.fullName} of ${vendor.name}`;
+      const action = `A new meter has just been installed in ${customer.address.fullAddress} by ${staff.fullName} of ${vendor.name}`;
       await createHistoryAndUpdateMeter(action);
       return;
     }
 
     if (meter.meterStatus === METER_STATUS.COMMISIONED) {
-      const action = `meter as just been commisioned in ${customer.address.fullAddress} by ${staff.fullName}`;
+      const action = `meter has just been commisioned in ${customer.address.fullAddress} by ${staff.fullName}`;
       await createHistoryAndUpdateMeter(action);
       return;
     }
 
     if (meter.meterStatus === METER_STATUS.NEWMETER) {
-      const action = `a new meter as just been captured by ${staff.fullName}`;
+      const action = `a new meter has just been captured by ${staff.fullName}`;
       await createHistoryAndUpdateMeter(action);
       return;
     }
 
     if (staffInstaller) {
-      const action = `A new meter as just been assigned for installation to ${staffInstaller.fullName}`;
+      const action = `A new meter has just been assigned for installation to ${staffInstaller.fullName}`;
       await createHistoryAndUpdateMeter(action);
       return;
     }
   } catch (error) {
-    return 'An Error as Occured in creating history and updating a meter';
+    return 'An Error has Occured in creating history and updating a meter';
   }
 };
 
@@ -75,7 +75,7 @@ export const validateMeterStatus = (meter: MeterDoc, meterStatus: METER_STATUS) 
   let message: string;
 
   if (meterStatus == meter.meterStatus) {
-    message = `this meter action "${meterStatus}" as already been done`;
+    message = `this meter action "${meterStatus}" has already been done`;
   }
 
   if (meterStatus == METER_STATUS.COMMISIONED && meter.meterStatus == METER_STATUS.ASSIGNED) {
