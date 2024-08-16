@@ -97,9 +97,9 @@ export const validateMeterStatus = (meter: MeterDoc, meterStatus: METER_STATUS) 
 };
 
 export const meterUpdateStaffCheck = (meterStatus, role) => {
-  /* if (role == STAFF_ROLE.ADMIN) {
+  if (role == STAFF_ROLE.AEDC_STAFF) {
     return true;
-  } */
+  }
 
   if (meterStatus == METER_STATUS.COMMISIONED && role == STAFF_ROLE.AEDC_STAFF) {
     return true;

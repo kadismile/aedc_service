@@ -39,7 +39,7 @@ export const search = async (req: Request, res: Response) => {
         break;
       case 'staffs':
         results = await Staff.find({
-          $or: [{ name: regex }, { phoneNumber: regex }]
+          $or: [{ fullName: regex }, { phoneNumber: regex }]
         }).exec();
         break;
       default:

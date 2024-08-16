@@ -77,7 +77,7 @@ export const updateMeter = async (req: Request, res: Response) => {
 
       const updateMeter = await Meter.findByIdAndUpdate({ _id: id }, { meterStatus, address }, { new: true });
       const vendor = await Vendor.findOne({ _id: req.staff.vendor });
-      if (vendor?._id.equals(req.staff.vendor)) {
+      if (req.staff.role == STAFF_ROLE.AEDC_STAFF || vendor?._id.equals(req.staff.vendor)) {
         await generateMeterHistory(updateMeter, req.staff, vendor, address, undefined);
       } else {
         return res.status(422).json({ error: 'you cannot update meter for another vendor' });
