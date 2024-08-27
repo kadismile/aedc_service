@@ -11,7 +11,8 @@ export enum METER_TYPE {
 }
 
 export enum METER_STATUS {
-  NEWMETER = 'new_meter', //
+  NEWMETER = 'new_meter', //,
+  INSTOCK = 'in_stock', // when a schedule is sent to AEDC
   INSTALLED = 'installed',
   ASSIGNED = 'assigned',
   COMMISIONED = 'commisioned'
