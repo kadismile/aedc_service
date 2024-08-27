@@ -9,11 +9,14 @@ import {
 import { advancedResults } from '../helpers/query.js';
 import { sanitizeReturnedStaff } from '../helpers/staff_helper.js';
 import Logger from '../libs/logger.js';
+import Assignemnt from '../models/AssignmentModel/AssigmentModel.js';
 import History from '../models/HistoryModel/HistoryModel.js';
+import Meter from '../models/MeterModel/MeterModel.js';
 import Staff, { StaffDocumentResult } from '../models/StaffModel/StaffModel.js';
 import Vendor from '../models/VendorModel/VendorModel.js';
 import { HistoryDoc } from '../types/history.js';
-import { RegisterStaffRequestBody, StaffDoc } from '../types/staff.js';
+import { METER_STATUS } from '../types/meter.js';
+import { RegisterStaffRequestBody, STAFF_ROLE, StaffDoc } from '../types/staff.js';
 
 export const createStaff = async (req: Request, res: Response) => {
   const body = req.body as RegisterStaffRequestBody;
@@ -133,14 +136,32 @@ export const getStaff = async (req: Request, res: Response) => {
     if (!staff) {
       return res.status(404).json({
         status: 'failed',
-        message: `User not found with id ${id}`
+        message: `Staff not found with id ${id}`
       });
     }
     const returnedUser = sanitizeReturnedStaff(staff._doc);
-    return res.status(200).json({
-      status: 'success',
-      data: returnedUser
-    });
+
+    if (returnedUser.role === STAFF_ROLE.INSTALLER) {
+      const assignedMeters = await Assignemnt.find({ staff: returnedUser._id });
+      const assignmentIds = assignedMeters.map(ass => ass.meter);
+      const installedMeters = await Meter.find({
+        _id: { $in: assignmentIds },
+        meterStatus: METER_STATUS.INSTALLED
+      });
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          ...returnedUser,
+          installedMeters: installedMeters.length,
+          assignedMeters: assignedMeters.length
+        }
+      });
+    } else {
+      return res.status(200).json({
+        status: 'success',
+        data: returnedUser
+      });
+    }
   } catch (error) {
     Logger.error(error);
     return res.status(500).json({ message: 'Internal server error' });
