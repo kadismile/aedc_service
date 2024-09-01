@@ -5,11 +5,13 @@ import { createCustomerApiValidator } from '../api_validators/customer-api-valid
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
 import Customer, { CustomerDocumentResult } from '../models/CustomerModel/CustomerModel.js';
+import { sendEmail } from '../services/emailService.js';
+import { meterInstallationCompleted,meterInstallationInProgress } from '../services/emailTemplates.js';
 import { CustomerDoc, RegisterCustomerRequestBody } from '../types/customer.js';
 
 export const createCustomer = async (req: Request, res: Response) => {
   const body = req.body as RegisterCustomerRequestBody;
-  const { name, phoneNumber, address } = body;
+  const { name, phoneNumber, address, email } = body;
   try {
     const { error } = createCustomerApiValidator.validate(req.body);
     if (error) {
@@ -20,6 +22,7 @@ export const createCustomer = async (req: Request, res: Response) => {
       name,
       phoneNumber,
       address,
+      email,
       createdBy: req.staff._id
     });
 
@@ -114,6 +117,63 @@ export const getCustomersByState = async (req: Request, res: Response) => {
     return res.status(200).json({
       status: 'success',
       data: result
+    });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+export const notifyInstallationProgress = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const customer = await Customer.findById(id);
+    if (!customer) {
+      return res.status(404).json({
+        status: 'failed',
+        message: `Customer not found with id ${id}`,
+      });
+    }
+
+    await sendEmail(
+      customer.email, 
+      'Meter Installation in Progress',
+      '',
+      meterInstallationInProgress(customer.name)
+    );
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Notification sent about installation progress',
+    });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const notifyInstallationCompleted = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const customer = await Customer.findById(id);
+    if (!customer) {
+      return res.status(404).json({
+        status: 'failed',
+        message: `Customer not found with id ${id}`,
+      });
+    }
+
+    await sendEmail(
+      customer.email,
+      'Meter Installation Completed',
+      '',
+      meterInstallationCompleted(customer.name)
+    );
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Notification sent about installation completion',
     });
   } catch (error) {
     Logger.error(error);
