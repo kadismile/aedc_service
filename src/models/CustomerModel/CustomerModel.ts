@@ -38,6 +38,11 @@ const customerSchema = new mongoose.Schema<CustomerDocumentResult, CustomerModel
       required: true,
       unique: true
     },
+    email:{
+      type: String,
+      required:true,
+      unique: true
+    },
     address: {
       type: addressSchema,
       required: true

@@ -115,3 +115,23 @@ export const meterUpdateStaffCheck = (meterStatus, role) => {
 
   return undefined;
 };
+
+export const validateCsvAndCreate = async (staff, meter: MeterDoc) => {
+  const values = await Promise.all([await Meter.findOne({ meterNumber: meter.meterNumber })]);
+
+  if (!values.includes(null)) {
+    return meter;
+  } else {
+    const { meterNumber, typeOfMeter, meterStatus, barcode } = meter;
+    const newDept = new Meter({
+      meterNumber,
+      typeOfMeter,
+      vendor: staff.vendor,
+      createdBy: staff._id,
+      meterStatus,
+      barcode
+    });
+    await newDept.save();
+  }
+  return null;
+};

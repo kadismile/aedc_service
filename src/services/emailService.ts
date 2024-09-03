@@ -11,20 +11,21 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendEmail = async (to: string, subject: string, text: string, html: string) => {
-  try {
-    const info = await transporter.sendMail({
-      from: `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
-      to,
-      subject,
-      text,
-      html,
-    });
+export const sendEmail = async (to: string, subject: string, html: string) => {
+  const mailOptions = {
+    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+    to,
+    subject,
+    html,
+  };
 
-    
-    Logger.info(`Email sent: ${info.messageId}`);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    Logger.info('Email sent: %s', info.messageId);
+    return info;
   } catch (error) {
-    Logger.error(`Error sending email: ${error}`);
-    throw new Error(`Could not send email: ${error}`);
+    Logger.error('Error sending email: %O', error);
+    throw new Error('Email sending failed');
   }
 };
+

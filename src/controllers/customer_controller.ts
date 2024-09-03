@@ -6,7 +6,7 @@ import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
 import Customer, { CustomerDocumentResult } from '../models/CustomerModel/CustomerModel.js';
 import { sendEmail } from '../services/emailService.js';
-import { meterInstallationCompleted,meterInstallationInProgress } from '../services/emailTemplates.js';
+import { installationCompleteTemplate,installationInProgressTemplate } from '../services/emailTemplates.js';
 import { CustomerDoc, RegisterCustomerRequestBody } from '../types/customer.js';
 
 export const createCustomer = async (req: Request, res: Response) => {
@@ -125,55 +125,38 @@ export const getCustomersByState = async (req: Request, res: Response) => {
 };
 
 
-export const notifyInstallationProgress = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  try {
-    const customer = await Customer.findById(id);
-    if (!customer) {
-      return res.status(404).json({
-        status: 'failed',
-        message: `Customer not found with id ${id}`,
-      });
-    }
+export const notifyCustomer = async (req: Request, res: Response) => {
+  const { email, emailType } = req.body;
 
-    await sendEmail(
-      customer.email, 
-      'Meter Installation in Progress',
-      '',
-      meterInstallationInProgress(customer.name)
-    );
-
-    return res.status(200).json({
-      status: 'success',
-      message: 'Notification sent about installation progress',
-    });
-  } catch (error) {
-    Logger.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+  if (!email || !emailType) {
+    return res.status(400).json({ message: 'Email and email type are required' });
   }
-};
 
-export const notifyInstallationCompleted = async (req: Request, res: Response) => {
-  const { id } = req.params;
   try {
-    const customer = await Customer.findById(id);
+    const customer = await Customer.findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
+
     if (!customer) {
-      return res.status(404).json({
-        status: 'failed',
-        message: `Customer not found with id ${id}`,
-      });
+      return res.status(404).json({ message: 'Customer not found' });
     }
 
-    await sendEmail(
-      customer.email,
-      'Meter Installation Completed',
-      '',
-      meterInstallationCompleted(customer.name)
-    );
+    let emailSubject;
+    let emailHtml;
+
+    if (emailType === 'inProgress') {
+      emailSubject = 'Meter Installation In Progress';
+      emailHtml = installationInProgressTemplate(customer.name);
+    } else if (emailType === 'complete') {
+      emailSubject = 'Meter Installation Complete';
+      emailHtml = installationCompleteTemplate(customer.name);
+    } else {
+      return res.status(400).json({ message: 'Invalid email type' });
+    }
+
+    await sendEmail(customer.email, emailSubject, emailHtml);
 
     return res.status(200).json({
       status: 'success',
-      message: 'Notification sent about installation completion',
+      message: `Notification sent to ${customer.name} at ${customer.email}`
     });
   } catch (error) {
     Logger.error(error);

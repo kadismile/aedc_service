@@ -54,8 +54,7 @@ const meterSchema = new mongoose.Schema<MeterDocumentResult, MeterModel>(
       ref: 'Staff'
     },
     address: {
-      type: addressSchema,
-      required: true
+      type: addressSchema
     },
     vendor: {
       type: Schema.Types.ObjectId,

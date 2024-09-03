@@ -9,7 +9,8 @@ import {
   getMeterByVendor,
   getMeters,
   mapScan,
-  updateMeter
+  updateMeter,
+  uploadMetersCSV
 } from '../controllers/meter_controller.js';
 import { upload } from '../helpers/file_upload.js';
 import { authorize, restrictToRoles } from '../middleware/permission-middleware.js';
@@ -25,5 +26,6 @@ router.put('/update-meter/:id', authorize, upload.single('fileUpload'), updateMe
 router.post('/assign/', authorize, upload.single('fileUpload'), assignMeterToStaff);
 router.post('/map/scan', authorize, upload.single('fileUpload'), mapScan);
 router.post('/customer/assign', authorize, upload.single('fileUpload'), assignMeterToCustomer);
+router.post('/upload', authorize, upload.single('fileUpload'), uploadMetersCSV);
 
 export default router;
