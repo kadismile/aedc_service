@@ -388,8 +388,8 @@ export const assignMeterToCustomer = async (req: Request, res: Response) => {
 export const uploadMetersCSV = async (req: Request, res: Response) => {
   try {
     if (req?.file) {
-      const { path, filename } = req.file;
-      const mapCSV = await CSVToJSON().fromFile(`./helpers/${filename}`);
+      const { path } = req.file;
+      const mapCSV = await CSVToJSON().fromFile(path);
       const errors = [];
       for (const mapData of mapCSV) {
         const staff = req.staff;
@@ -398,7 +398,7 @@ export const uploadMetersCSV = async (req: Request, res: Response) => {
           errors.push(validation);
         }
       }
-      fs.unlinkSync(`./helpers/${path}`);
+      fs.unlinkSync(path);
       if (errors.length) {
         res.status(403).json({
           status: 'failed',
