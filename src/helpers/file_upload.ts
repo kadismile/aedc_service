@@ -34,6 +34,7 @@ export const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
     if (
+      file.mimetype == 'text/csv' ||
       file.mimetype == 'image/png' ||
       file.mimetype == 'image/jpg' ||
       file.mimetype == 'image/jpeg' ||

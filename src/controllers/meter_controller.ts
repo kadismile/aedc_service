@@ -1,4 +1,6 @@
+import CSVToJSON from 'csvtojson';
 import { Request, Response } from 'express';
+import fs from 'fs';
 import { Document } from 'mongoose';
 
 import {
@@ -8,7 +10,7 @@ import {
   updateMeterApiValidator
 } from '../api_validators/meter-api-validators.js';
 import { manageFileUpload } from '../helpers/file_upload.js';
-import { generateMeterHistory, meterUpdateStaffCheck } from '../helpers/meter_helper.js';
+import { generateMeterHistory, meterUpdateStaffCheck, validateCsvAndCreate } from '../helpers/meter_helper.js';
 import { advancedResults } from '../helpers/query.js';
 import Logger from '../libs/logger.js';
 import Assignemnt from '../models/AssignmentModel/AssigmentModel.js';
@@ -380,5 +382,40 @@ export const assignMeterToCustomer = async (req: Request, res: Response) => {
     }
   } else {
     return res.status(422).json({ error: 'you must be an aedc staff to perfoem this operation' });
+  }
+};
+
+export const uploadMetersCSV = async (req: Request, res: Response) => {
+  try {
+    if (req?.file) {
+      const { path, filename } = req.file;
+      const mapCSV = await CSVToJSON().fromFile(`./helpers/${filename}`);
+      const errors = [];
+      for (const mapData of mapCSV) {
+        const staff = req.staff;
+        const validation = await validateCsvAndCreate(staff, mapData);
+        if (validation) {
+          errors.push(validation);
+        }
+      }
+      fs.unlinkSync(`./helpers/${path}`);
+      if (errors.length) {
+        res.status(403).json({
+          status: 'failed',
+          data: errors
+        });
+      } else {
+        res.status(201).json({
+          status: 'success',
+          data: 'product successfully uploaded via csv'
+        });
+      }
+    }
+  } catch (e) {
+    res.status(403).json({
+      error: e,
+      status: 'failed',
+      message: e.message
+    });
   }
 };
