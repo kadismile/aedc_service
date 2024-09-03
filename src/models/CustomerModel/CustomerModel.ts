@@ -30,8 +30,13 @@ const customerSchema = new mongoose.Schema<CustomerDocumentResult, CustomerModel
   {
     name: {
       type: String,
+      required: true
+    },
+    email: {
+      type: String,
       required: true,
-      unique: true
+      unique: true,
+      lowercase: true
     },
     phoneNumber: {
       type: String,

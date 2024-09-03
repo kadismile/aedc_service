@@ -387,6 +387,12 @@ export const assignMeterToCustomer = async (req: Request, res: Response) => {
 
 export const uploadMetersCSV = async (req: Request, res: Response) => {
   try {
+    if (req.staff.role == STAFF_ROLE.AEDC_STAFF) {
+      res.status(403).json({
+        status: 'failed',
+        data: [{ error: 'youre not permitted to perform this operation' }]
+      });
+    }
     if (req?.file) {
       const { path } = req.file;
       const mapCSV = await CSVToJSON().fromFile(path);
