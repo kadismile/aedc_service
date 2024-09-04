@@ -15,6 +15,6 @@ router.get('/all', authorize, restrictToRoles(['admin']), getStaffs);
 router.get('/:id', authorize, restrictToRoles(['admin']), getStaff);
 router.get('/meter/history', authorize, getHistoryOfMeterScan);
 router.get('/vendor/:vendorId', authorize, getStaffsByVendor);
-router.delete('/:id', authorize, restrictToRoles(['admin']), deActivateStaff);
+router.delete('/:id', authorize, deActivateStaff);
 
 export default router;
