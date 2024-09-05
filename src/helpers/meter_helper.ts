@@ -153,7 +153,7 @@ export const validateCsvAndCreate = async (staff, meter: CsvData) => {
     } else {
       const { meterNumber, typeOfMeter, barcode, customerName, phoneNumber, customerEmail, address, state } = meter;
 
-      const addressDoc = {
+      const addressDocument = {
         fullAddress: address,
         state,
         longitude: '9.0563',
@@ -163,7 +163,7 @@ export const validateCsvAndCreate = async (staff, meter: CsvData) => {
       const customer = new Customer({
         name: customerName,
         email: customerEmail,
-        address: addressDoc,
+        address: addressDocument,
         phoneNumber
       });
 
@@ -182,7 +182,7 @@ export const validateCsvAndCreate = async (staff, meter: CsvData) => {
       const assignmentData = {
         customerId: customer._id,
         meterId: newMeter._id,
-        address
+        address: addressDocument
       };
       return await assignMeterToCustomer(assignmentData, staff);
     }
