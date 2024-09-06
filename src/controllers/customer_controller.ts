@@ -125,6 +125,8 @@ export const getCustomersByState = async (req: Request, res: Response) => {
 };
 
 
+const logoUrl = process.env.LOGO_URL;
+
 export const notifyCustomer = async (req: Request, res: Response) => {
   const { email, emailType } = req.body;
 
@@ -144,10 +146,10 @@ export const notifyCustomer = async (req: Request, res: Response) => {
 
     if (emailType === 'inProgress') {
       emailSubject = 'Meter Installation In Progress';
-      emailHtml = installationInProgressTemplate(customer.name);
+      emailHtml = installationInProgressTemplate(customer.name, logoUrl);
     } else if (emailType === 'complete') {
       emailSubject = 'Meter Installation Complete';
-      emailHtml = installationCompleteTemplate(customer.name);
+      emailHtml = installationCompleteTemplate(customer.name, logoUrl);
     } else {
       return res.status(400).json({ message: 'Invalid email type' });
     }

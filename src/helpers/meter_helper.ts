@@ -2,10 +2,23 @@ import Logger from '../libs/logger.js';
 import Customer from '../models/CustomerModel/CustomerModel.js';
 import History from '../models/HistoryModel/HistoryModel.js';
 import Meter from '../models/MeterModel/MeterModel.js';
+import Vendor from '../models/VendorModel/VendorModel.js';
 import { AddressDoc, CustomerDoc } from '../types/customer.js';
-import { METER_STATUS, MeterDoc } from '../types/meter.js';
+import { METER_STATUS, METER_TYPE, MeterDoc } from '../types/meter.js';
 import { VendorDoc } from '../types/vendor.js';
 import { STAFF_ROLE, StaffDoc } from './../types/staff.js';
+
+type CsvData = {
+  meterNumber: string;
+  typeOfMeter: METER_TYPE;
+  meterStatus: string;
+  barcode: string;
+  customerName: string;
+  phoneNumber: string;
+  address: string;
+  state: string;
+  customerEmail: string;
+};
 
 export const generateMeterHistory = async (
   meter: MeterDoc,
@@ -116,22 +129,96 @@ export const meterUpdateStaffCheck = (meterStatus, role) => {
   return undefined;
 };
 
-export const validateCsvAndCreate = async (staff, meter: MeterDoc) => {
-  const values = await Promise.all([await Meter.findOne({ meterNumber: meter.meterNumber })]);
+export const validateCsvAndCreate = async (staff, meter: CsvData) => {
+  try {
+    const { meterNumber, typeOfMeter, barcode, customerName, phoneNumber, customerEmail, address, state } = meter;
 
-  if (!values.includes(null)) {
-    return meter;
-  } else {
-    const { meterNumber, typeOfMeter, meterStatus, barcode } = meter;
-    const newDept = new Meter({
-      meterNumber,
-      typeOfMeter,
-      vendor: staff.vendor,
-      createdBy: staff._id,
-      meterStatus,
-      barcode
-    });
-    await newDept.save();
+    if (
+      !meterNumber ||
+      !typeOfMeter ||
+      !barcode ||
+      !customerName ||
+      !phoneNumber ||
+      !customerEmail ||
+      !address ||
+      !state
+    ) {
+      return { error: 'incomplete CSV data' };
+    }
+    const findMeter = await Promise.all([
+      await Meter.findOne({ $or: [{ meterNumber: meter.meterNumber, barcode: meter.barcode }] })
+    ]);
+    if (!findMeter.includes(null)) {
+      return { error: `This Meter Already Exists with meter-number ${meter.meterNumber}` };
+    } else {
+      const { meterNumber, typeOfMeter, barcode, customerName, phoneNumber, customerEmail, address, state } = meter;
+
+      const addressDocument = {
+        fullAddress: address,
+        state,
+        longitude: '9.0563',
+        latitude: '7.4985'
+      };
+
+      const customer = new Customer({
+        name: customerName,
+        email: customerEmail,
+        address: addressDocument,
+        phoneNumber
+      });
+
+      await customer.save();
+
+      const newMeter = new Meter({
+        meterNumber,
+        typeOfMeter,
+        vendor: staff.vendor,
+        createdBy: staff._id,
+        meterStatus: METER_STATUS.NEWMETER,
+        barcode
+      });
+      await newMeter.save();
+
+      const assignmentData = {
+        customerId: customer._id,
+        meterId: newMeter._id,
+        address: addressDocument
+      };
+      return await assignMeterToCustomer(assignmentData, staff);
+    }
+  } catch (error) {
+    return { error: `Error Uploading CSV ${error}` };
   }
-  return null;
+};
+
+const assignMeterToCustomer = async (data, staff: StaffDoc) => {
+  //if (staff.role == STAFF_ROLE.AEDC_STAFF) {
+  const { customerId, meterId, address } = data;
+  try {
+    const meter = await Meter.findOne({ _id: meterId, meterStatus: METER_STATUS.NEWMETER });
+    if (!meter) {
+      return { error: `No Meter Found` };
+    }
+
+    const customer = await Customer.findOne({ _id: customerId });
+    if (!customer) {
+      return { error: 'customer not found' };
+    }
+
+    const updateMeter = await Meter.findByIdAndUpdate(
+      { _id: meter._id },
+      { meterStatus: METER_STATUS.ASSIGNED, address, customer: customer._id },
+      { new: true }
+    );
+
+    const vendor = await Vendor.findOne({ _id: staff.vendor });
+    await generateMeterHistory(updateMeter, staff, vendor, address, undefined, customer);
+    return;
+  } catch (error) {
+    Logger.error(error);
+    return 'Internal server error';
+  }
+  // } else {
+  //   return { error: 'you cannot perfoem this operation' };
+  // }
 };
